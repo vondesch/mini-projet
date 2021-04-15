@@ -8,7 +8,12 @@
 #ifndef GYRO_H_
 #define GYRO_H_
 
-void get_position(void);
+#define STOP			0
+#define GO				1
+#define ROT_DROITE		2
+#define ROT_GAUCHE		3
+
+uint8_t get_position(void);
 
 
 
