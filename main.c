@@ -55,7 +55,9 @@ int main(void)
 
     halInit();
     chSysInit();
+    //starts proximity sensor and mpu readings
     mpu_init();
+    proximity_start();
 
     //starts the serial communication
     serial_start();
