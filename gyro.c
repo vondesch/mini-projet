@@ -8,7 +8,8 @@
 #include "ch.h"
 #include "hal.h"
 #include <gyro.h>
-#include "imu.h"
+#include <main.h>
+#include <imu.h>
 
 
 void get_position(void)
