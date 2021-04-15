@@ -13,7 +13,7 @@
 #define ROT_DROITE		2
 #define ROT_GAUCHE		3
 
-uint8_t get_position(void);
+void get_position(void);
 
 
 

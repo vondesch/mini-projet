@@ -12,8 +12,11 @@
 #include <sensors/imu.h>
 #include <msgbus/messagebus.h>
 #include <i2c_bus.h>
+#include <motors.h>
 
-uint8_t get_position(void) {
+#define vitesse 1200
+
+void get_position(void) {
 
 	//initialisation gyroscope
 	imu_start();
@@ -30,19 +33,26 @@ uint8_t get_position(void) {
 //	float *accel = imu_values->acceleration;
 
 	uint8_t erreur = 1;
-	uint8_t mode = 0;
+//	uint8_t mode = 0;
 //	int a;
 //	a = imu_values.acceleration[X_AXIS];
 
 	if (erreur > imu_values.acceleration[X_AXIS]) {
-		mode = ROT_DROITE;
+		//rotation à droite
+		left_motor_set_speed(vitesse);
+		right_motor_set_speed(-vitesse);
 	} else if (erreur < imu_values.acceleration[X_AXIS]) {
-		mode = ROT_GAUCHE;
+		//rotation à gauche
+		left_motor_set_speed(-vitesse);
+		right_motor_set_speed(vitesse);
 	} else if (imu_values.acceleration[Y_AXIS] > erreur) {
-		mode = GO;
-	} else
-		mode = STOP;
+		//avance
+		left_motor_set_speed(vitesse);
+		right_motor_set_speed(vitesse);
+	} else {
+		left_motor_set_speed(0);
+		right_motor_set_speed(0);
+	}
 
-	return mode;
 }
 
