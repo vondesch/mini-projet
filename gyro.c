@@ -7,12 +7,16 @@
 
 #include "ch.h"
 #include "hal.h"
-#include <imu.h>
+#include <gyro.h>
+#include "imu.h"
 
 
 void get_position(void)
 {
 	imu_start();
+
+	float *accel = imu_values->acceleration;
+
 }
 
 
