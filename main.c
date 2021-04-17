@@ -17,8 +17,13 @@
 #include <arm_math.h>
 #include <gyro.h>
 #include <sensors/imu.h>
+#include <sensors/proximity.h>
 #include <msgbus/messagebus.h>
 #include <i2c_bus.h>
+#include <wallDetect.h>
+
+
+
 
 #define vitesse 1200
 
@@ -88,7 +93,8 @@ int main(void)
 	i2c_start();
 
 	//initialisation gyroscope
-	imu_start();
+	//imu_start();
+	//proximity_start();
 
 	messagebus_t bus;
 	MUTEX_DECL(bus_lock);
