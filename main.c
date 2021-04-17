@@ -10,6 +10,7 @@
 #include <chprintf.h>
 #include <motors.h>
 #include <audio/microphone.h>
+#include <math.h>
 
 #include <audio_processing.h>
 #include <fft.h>
@@ -25,27 +26,38 @@
 
 
 
-#define vitesse 1200
-messagebus_t bus;
+#define vitesse 			300
+#define NB_SAMPLES_OFFSET 	200
 
-void motor_gyro(imu_msg_t imu_values) {
+
+messagebus_t bus;
+MUTEX_DECL(bus_lock);
+CONDVAR_DECL(bus_condvar);
+
+void motor_gyro(void) {
 
 	uint8_t erreur = 1;
 
 
-	if (erreur > imu_values.acceleration[X_AXIS]) {
+	if (get_acceleration(X_AXIS) < -erreur) {
 		//rotation à droite
 		left_motor_set_speed(vitesse);
 		right_motor_set_speed(-vitesse);
-	} else if (erreur < imu_values.acceleration[X_AXIS]) {
+	} else if (get_acceleration(X_AXIS) > erreur) {
 		//rotation à gauche
 		left_motor_set_speed(-vitesse);
 		right_motor_set_speed(vitesse);
-	} else if (imu_values.acceleration[Y_AXIS] > erreur) {
+//	} else if(erreur + 0.2  > abs(get_acceleration(Y_AXIS)) || abs(get_acceleration(Y_AXIS)) > 0){
+//		chThdSleepMilliseconds(200);
+	} else if (get_acceleration(Y_AXIS) > erreur) {
 		//avance
 		left_motor_set_speed(vitesse);
 		right_motor_set_speed(vitesse);
-	} else {
+	} else if(get_acceleration(Y_AXIS) < -erreur){
+		left_motor_set_speed(-vitesse);
+		right_motor_set_speed(-vitesse);
+	}
+	else {
 		left_motor_set_speed(0);
 		right_motor_set_speed(0);
 	}
@@ -97,20 +109,26 @@ int main(void)
 	proximity_start();
 
 	//messagebus_t bus;
-	MUTEX_DECL(bus_lock);
-	CONDVAR_DECL(bus_condvar);
+	messagebus_init(&bus, &bus_lock, &bus_condvar);
 
 	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
-	messagebus_init(&bus, &bus_lock, &bus_condvar);
 	imu_msg_t imu_values;
 
-	//wait 2 sec to be sure the e-puck is in a stable position
-	    chThdSleepMilliseconds(2000);
 
+
+	//wait 2 sec to be sure the e-puck is in a stable position
+//	chThdSleepMilliseconds(2000);
+	calibrate_acc();
+//	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
+	int16_t val_acc[2];
 	while (1)
 	{
-	messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
-	motor_gyro(imu_values);
+		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
+		val_acc[0] = get_acceleration(X_AXIS);
+		val_acc[1] = get_acceleration(Y_AXIS);
+		motor_gyro();
+		chprintf((BaseSequentialStream *)&SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",
+			val_acc[0], val_acc[1]);
 	}
 }
 
