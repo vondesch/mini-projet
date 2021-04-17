@@ -1,0 +1,5 @@
+remove all tp files 
+
+implement distance detection in order to stop movement when obstacle is detected
+
+create functino that modifies direction / speed depending on gyro measurements

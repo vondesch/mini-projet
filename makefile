@@ -14,6 +14,7 @@ CSRC += ./main.c \
 		./communications.c \
 		./fft.c \
 		./gyro.c \
+		./wallDetect.c \
 		
 		
 
