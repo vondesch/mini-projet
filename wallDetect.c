@@ -52,9 +52,9 @@ uint8_t wallDetected(void){
 }
 
 void printDistances(void){
-	chprintf((BaseSequentialStream *)&SDU1, "proximity left45=␣%d\n", get_prox(FRONTLEFT45));
-	chprintf((BaseSequentialStream *)&SDU1, "proximity left=␣%d\n", get_prox(FRONTLEFT));
-	chprintf((BaseSequentialStream *)&SDU1, "proximity right=␣%d\n", get_prox(FRONTRIGHT));
-	chprintf((BaseSequentialStream *)&SDU1, "proximity right45=␣%d\n", get_prox(FRONTRIGHT45));
+	chprintf((BaseSequentialStream *)&SD3, "proximity left45=␣%d\n", get_prox(FRONTLEFT45));
+	chprintf((BaseSequentialStream *)&SD3, "proximity left=␣%d\n", get_prox(FRONTLEFT));
+	chprintf((BaseSequentialStream *)&SD3, "proximity right=␣%d\n", get_prox(FRONTRIGHT));
+	chprintf((BaseSequentialStream *)&SD3, "proximity right45=␣%d\n", get_prox(FRONTRIGHT45));
 
 }
