@@ -8,8 +8,7 @@
 #include "ch.h"			// do ch.h/hal.h need to be included?
 #include "hal.h"
 #include "wallDetect.h"
-
-//#include <proximity.h>
+#include <sensors/proximity.h>
 
 #define FRONTLEFT 7				//proximity sensor front-left-5deg
 #define FRONTLEFT45 6			//proximity sensor front-left-45deg
@@ -23,7 +22,7 @@
 // - IR2 (right) + IR6 (front-left-45deg)
 // - IR3 (back-right) + IR7 (front-left)
 
-int wallLeft(){
+uint8_t wallLeft(void){
 	if (get_prox(FRONTLEFT)<=MINDISTANCE)
 		return true;
 
@@ -34,7 +33,7 @@ int wallLeft(){
 		return false;
 }
 
-int wallRight(){
+uint8_t wallRight(void){
 	if(get_prox(FRONTRIGHT)<=MINDISTANCE)
 		return true;
 
@@ -45,7 +44,7 @@ int wallRight(){
 		return false;
 	}
 
-int wallDetected(){
+uint8_t wallDetected(void){
 	if (wallLeft()==true || wallRight()==true)
 		return true;
 	else

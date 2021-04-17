@@ -16,6 +16,7 @@
 #include <communications.h>
 #include <arm_math.h>
 #include <gyro.h>
+#include <sensors/proximity.h>
 
 //uncomment to send the FFTs results from the real microphones
 #define SEND_FROM_MIC
@@ -58,7 +59,7 @@ int main(void)
     chSysInit();
     //starts proximity sensor and mpu readings
     mpu_init();
-    proximity_start();
+    //proximity_start();
 
     //starts the serial communication
     serial_start();

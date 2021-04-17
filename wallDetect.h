@@ -11,17 +11,17 @@
  /**
  * @brief   Checks if an obstacle is located somewhere in to the left ahead of the robot
  */
-int wallLeft();
+uint8_t wallLeft(void);
 
 /**
 * @brief   Checks if an obstacle is located somewhere to the right ahead of the robot
 */
-int wallRight();
+uint8_t wallRight(void);
 
  /**
  * @brief   Checks if an obstacle is located somewhere in front of the robot
  */
-int wallDetected();
+uint8_t wallDetected(void);
 
 
 #endif /* WALLDETECT_H */
