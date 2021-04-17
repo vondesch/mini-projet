@@ -23,6 +23,9 @@ uint8_t wallRight(void);
  */
 uint8_t wallDetected(void);
 
+												//debugging purpose only
+void printDistances(void);
+
 
 #endif /* WALLDETECT_H */
 
