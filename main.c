@@ -58,6 +58,7 @@ static void serial_start(void) {
 	sdStart(&SD3, &ser_cfg); // UART3.
 }
 
+
 static void timer12_start(void) {
 	//General Purpose Timer configuration
 	//timer 12 is a 16 bit timer so we can measure time
@@ -84,6 +85,8 @@ int main(void)
 	//inits the motors
 	motors_init();
 
+	i2c_start();
+
 	//initialisation gyroscope
 	imu_start();
 
@@ -94,6 +97,9 @@ int main(void)
 	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
 	messagebus_init(&bus, &bus_lock, &bus_condvar);
 	imu_msg_t imu_values;
+
+	//wait 2 sec to be sure the e-puck is in a stable position
+	    chThdSleepMilliseconds(2000);
 
 	while (1)
 	{

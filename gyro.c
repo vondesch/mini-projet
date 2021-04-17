@@ -16,6 +16,8 @@
 
 #define vitesse 1200
 
+
+
 void get_position(void) {
 
 	//initialisation gyroscope
