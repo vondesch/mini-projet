@@ -26,6 +26,7 @@
 
 
 #define vitesse 1200
+messagebus_t bus;
 
 void motor_gyro(imu_msg_t imu_values) {
 
@@ -51,8 +52,7 @@ void motor_gyro(imu_msg_t imu_values) {
 
 }
 
-//uncomment to send the FFTs results from the real microphones
-#define SEND_FROM_MIC
+
 
 //uncomment to use double buffering to send the FFT to the computer
 //#define DOUBLE_BUFFERING
@@ -93,10 +93,10 @@ int main(void)
 	i2c_start();
 
 	//initialisation gyroscope
-	//imu_start();
-	//proximity_start();
+	imu_start();
+	proximity_start();
 
-	messagebus_t bus;
+	//messagebus_t bus;
 	MUTEX_DECL(bus_lock);
 	CONDVAR_DECL(bus_condvar);
 
