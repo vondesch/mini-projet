@@ -23,12 +23,8 @@
 #include <i2c_bus.h>
 #include <wallDetect.h>
 
-
-
-
 #define vitesse 			300
 #define NB_SAMPLES_OFFSET 	200
-
 
 messagebus_t bus;
 MUTEX_DECL(bus_lock);
@@ -38,33 +34,48 @@ void motor_gyro(void) {
 
 	uint8_t erreur = 1;
 
+//	if (get_acceleration(X_AXIS) < -erreur) {
+//		//rotation à droite
+//		left_motor_set_speed(vitesse);
+//		right_motor_set_speed(-vitesse);
+//	} else if (get_acceleration(X_AXIS) > erreur) {
+//		//rotation à gauche
+//		left_motor_set_speed(-vitesse);
+//		right_motor_set_speed(vitesse);
+//	} else if(erreur + 0.2  > abs(get_acceleration(Y_AXIS)) || abs(get_acceleration(Y_AXIS)) > 0){
+//		chThdSleepMilliseconds(200);
 
-	if (get_acceleration(X_AXIS) < -erreur) {
+	if (get_acceleration(Y_AXIS) < -erreur) {
+		if (get_acceleration(X_AXIS) < -erreur) {
+			//rotation à droite
+			left_motor_set_speed(vitesse);
+			right_motor_set_speed(-vitesse);
+		} else if (get_acceleration(X_AXIS) > erreur) {
+			//rotation à gauche
+			left_motor_set_speed(-vitesse);
+			right_motor_set_speed(vitesse);
+		} else {
+			//recule
+			left_motor_set_speed(-vitesse);
+			right_motor_set_speed(-vitesse);
+		}
+	} else if (get_acceleration(X_AXIS) > erreur) {
 		//rotation à droite
 		left_motor_set_speed(vitesse);
 		right_motor_set_speed(-vitesse);
-	} else if (get_acceleration(X_AXIS) > erreur) {
+	} else if (get_acceleration(X_AXIS) < -erreur) {
 		//rotation à gauche
 		left_motor_set_speed(-vitesse);
 		right_motor_set_speed(vitesse);
-//	} else if(erreur + 0.2  > abs(get_acceleration(Y_AXIS)) || abs(get_acceleration(Y_AXIS)) > 0){
-//		chThdSleepMilliseconds(200);
 	} else if (get_acceleration(Y_AXIS) > erreur) {
 		//avance
 		left_motor_set_speed(vitesse);
 		right_motor_set_speed(vitesse);
-	} else if(get_acceleration(Y_AXIS) < -erreur){
-		left_motor_set_speed(-vitesse);
-		right_motor_set_speed(-vitesse);
-	}
-	else {
+	} else {
 		left_motor_set_speed(0);
 		right_motor_set_speed(0);
 	}
-
 }
-
-
 
 //uncomment to use double buffering to send the FFT to the computer
 //#define DOUBLE_BUFFERING
@@ -74,7 +85,6 @@ static void serial_start(void) {
 
 	sdStart(&SD3, &ser_cfg); // UART3.
 }
-
 
 static void timer12_start(void) {
 	//General Purpose Timer configuration
@@ -89,8 +99,7 @@ static void timer12_start(void) {
 	gptStartContinuous(&GPTD12, 0xFFFF);
 }
 
-int main(void)
-{
+int main(void) {
 	halInit();
 	chSysInit();
 	mpu_init();
@@ -114,21 +123,17 @@ int main(void)
 	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
 	imu_msg_t imu_values;
 
-
-
 	//wait 2 sec to be sure the e-puck is in a stable position
 //	chThdSleepMilliseconds(2000);
 	calibrate_acc();
 //	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
 	int16_t val_acc[2];
-	while (1)
-	{
+	while (1) {
 		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
 		val_acc[0] = get_acceleration(X_AXIS);
 		val_acc[1] = get_acceleration(Y_AXIS);
 		motor_gyro();
-		chprintf((BaseSequentialStream *)&SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",
-			val_acc[0], val_acc[1]);
+		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n", val_acc[0], val_acc[1]);
 	}
 }
 
