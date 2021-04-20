@@ -16,7 +16,7 @@
 #define FRONTRIGHT 0			//proximity sensor front-left-5deg
 #define FRONTRIGHT45 1			//proximity sensor front-left-45deg
 #define MINDISTANCE 3
-#define MINDISTANCE45 3.5
+#define MINDISTANCE45 2.5
 
 #define INTENSITY 80
 #define OFF 0
@@ -60,11 +60,10 @@ void print_distances(void){
 	chprintf((BaseSequentialStream *)&SD3, "proximity left=␣%d\n", get_prox(FRONTLEFT));
 	chprintf((BaseSequentialStream *)&SD3, "proximity right=␣%d\n", get_prox(FRONTRIGHT));
 	chprintf((BaseSequentialStream *)&SD3, "proximity right45=␣%d\n", get_prox(FRONTRIGHT45));
-
 }
 
 void led_signal(void){
-	set_led(LED8, INTENSITY ); //led8 corresponds to setting all LEDS at the same time
+	set_led(LED8, INTENSITY ); 		//led8 corresponds to setting all LEDS at the same time
 	delay(SystemCoreClock/16);
 	set_led(LED8, OFF);
 
@@ -84,12 +83,11 @@ void led_signal(void){
 	delay(SystemCoreClock/16);
 	set_led(LED7, OFF);
 
-	set_led(LED8, INTENSITY ); //setting all LEDS at the same time
+	set_led(LED8, INTENSITY ); 		//setting all LEDS at the same time
 	delay(SystemCoreClock/16);
 	set_led(LED8, OFF);
 
-	set_led(LED8, INTENSITY ); //setting all LEDS at the same time
+	set_led(LED8, INTENSITY ); 		//setting all LEDS at the same time
 	delay(SystemCoreClock/16);
 	set_led(LED8, OFF);
-
 }																					//add another LED function using green LEDs

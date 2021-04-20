@@ -15,6 +15,6 @@
 
 void get_position(void);
 
-int detectMovement(void);
+uint8_t detect_movement(void);
 
 #endif /* GYRO_H_ */
