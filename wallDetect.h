@@ -11,20 +11,22 @@
  /**
  * @brief   Checks if an obstacle is located somewhere in to the left ahead of the robot
  */
-uint8_t wallLeft(void);
+uint8_t wall_left(void);
 
 /**
 * @brief   Checks if an obstacle is located somewhere to the right ahead of the robot
 */
-uint8_t wallRight(void);
+uint8_t wall_right(void);
 
  /**
  * @brief   Checks if an obstacle is located somewhere in front of the robot
  */
-uint8_t wallDetected(void);
+uint8_t wall_detected(void);
 
 												//debugging purpose only
-void printDistances(void);
+void print_distances(void);
+
+void led_signal(void);
 
 
 #endif /* WALLDETECT_H */
