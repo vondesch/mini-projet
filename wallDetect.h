@@ -14,8 +14,8 @@
 #define FRONTRIGHT45 1			//proximity sensor front-left-45deg
 #define RIGHT 2					//proximity sensor right
 #define LEFT 5					//proximity sensor left
-#define RANGE 105
-#define MINDISTANCE 100
+#define RANGE 100
+#define MINDISTANCE 150
 #define MINDISTANCE45 100
 enum {straight, left, right};
 

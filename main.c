@@ -32,6 +32,9 @@ CONDVAR_DECL(bus_condvar);
 
 void motor_gyro(void) {
 
+	uint16_t pos_motor_right;
+	uint16_t pos_motor_left;
+
 	uint8_t erreur = 1;
 
 //	if (get_acceleration(X_AXIS) < -erreur) {
@@ -45,24 +48,22 @@ void motor_gyro(void) {
 //	} else if(erreur + 0.2  > abs(get_acceleration(Y_AXIS)) || abs(get_acceleration(Y_AXIS)) > 0){
 //		chThdSleepMilliseconds(200);
 	if (obstacle_detect() == right) {
-		while (!obstacle_in_range()) {
+		if (!obstacle_in_range()) {
 			left_motor_set_speed(-vitesse);
 			right_motor_set_speed(vitesse);
 		}
-		while (obstacle_in_range()) {
-			left_motor_set_speed(vitesse);
-			right_motor_set_speed(vitesse);
-		}
 	} else if (obstacle_detect() == left) {
-		while (!obstacle_in_range()) {
+		if (!obstacle_in_range()) {
 			left_motor_set_speed(vitesse);
 			right_motor_set_speed(-vitesse);
 		}
-		while (obstacle_in_range()) {
-			left_motor_set_speed(vitesse);
-			right_motor_set_speed(vitesse);
-		}
-	} else {
+	}
+	else if (obstacle_in_range()) {
+//		right_motor_get_pos
+		left_motor_set_speed(vitesse);
+		right_motor_set_speed(vitesse);
+	}
+	else {
 
 		if (get_acceleration(Y_AXIS) < -erreur) {
 			if (get_acceleration(X_AXIS) < -erreur) {
