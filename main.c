@@ -44,36 +44,44 @@ void motor_gyro(void) {
 //		right_motor_set_speed(vitesse);
 //	} else if(erreur + 0.2  > abs(get_acceleration(Y_AXIS)) || abs(get_acceleration(Y_AXIS)) > 0){
 //		chThdSleepMilliseconds(200);
+	if (obstacle_detect() == right) {
+		left_motor_set_speed(-vitesse);
+		right_motor_set_speed(vitesse);
+	} else if (obstacle_detect() == right) {
+		left_motor_set_speed(vitesse);
+		right_motor_set_speed(-vitesse);
+	} else {
 
-	if (get_acceleration(Y_AXIS) < -erreur) {
-		if (get_acceleration(X_AXIS) < -erreur) {
+		if (get_acceleration(Y_AXIS) < -erreur) {
+			if (get_acceleration(X_AXIS) < -erreur) {
+				//rotation à droite
+				left_motor_set_speed(vitesse);
+				right_motor_set_speed(-vitesse);
+			} else if (get_acceleration(X_AXIS) > erreur) {
+				//rotation à gauche
+				left_motor_set_speed(-vitesse);
+				right_motor_set_speed(vitesse);
+			} else {
+				//recule
+				left_motor_set_speed(-vitesse);
+				right_motor_set_speed(-vitesse);
+			}
+		} else if (get_acceleration(X_AXIS) > erreur) {
 			//rotation à droite
 			left_motor_set_speed(vitesse);
 			right_motor_set_speed(-vitesse);
-		} else if (get_acceleration(X_AXIS) > erreur) {
+		} else if (get_acceleration(X_AXIS) < -erreur) {
 			//rotation à gauche
 			left_motor_set_speed(-vitesse);
 			right_motor_set_speed(vitesse);
+		} else if (get_acceleration(Y_AXIS) > erreur) {
+			//avance
+			left_motor_set_speed(vitesse);
+			right_motor_set_speed(vitesse);
 		} else {
-			//recule
-			left_motor_set_speed(-vitesse);
-			right_motor_set_speed(-vitesse);
+			left_motor_set_speed(0);
+			right_motor_set_speed(0);
 		}
-	} else if (get_acceleration(X_AXIS) > erreur) {
-		//rotation à droite
-		left_motor_set_speed(vitesse);
-		right_motor_set_speed(-vitesse);
-	} else if (get_acceleration(X_AXIS) < -erreur) {
-		//rotation à gauche
-		left_motor_set_speed(-vitesse);
-		right_motor_set_speed(vitesse);
-	} else if (get_acceleration(Y_AXIS) > erreur) {
-		//avance
-		left_motor_set_speed(vitesse);
-		right_motor_set_speed(vitesse);
-	} else {
-		left_motor_set_speed(0);
-		right_motor_set_speed(0);
 	}
 }
 
@@ -87,15 +95,15 @@ static void serial_start(void) {
 }
 
 static void timer12_start(void) {
-	//General Purpose Timer configuration
-	//timer 12 is a 16 bit timer so we can measure time
-	//to about 65ms with a 1Mhz counter
+//General Purpose Timer configuration
+//timer 12 is a 16 bit timer so we can measure time
+//to about 65ms with a 1Mhz counter
 	static const GPTConfig gpt12cfg = { 1000000, /* 1MHz timer clock in order to measure uS.*/
 	NULL, /* Timer callback.*/
 	0, 0 };
 
 	gptStart(&GPTD12, &gpt12cfg);
-	//let the timer count to max value
+//let the timer count to max value
 	gptStartContinuous(&GPTD12, 0xFFFF);
 }
 
@@ -104,26 +112,27 @@ int main(void) {
 	chSysInit();
 	mpu_init();
 
-	//starts the serial communication
+//starts the serial communication
 	serial_start();
-	//starts timer 12
+//starts timer 12
 	timer12_start();
-	//inits the motors
+//inits the motors
 	motors_init();
 
 	i2c_start();
 
-	//initialisation gyroscope
+//initialisation gyroscope
 	imu_start();
 	proximity_start();
 
-	//messagebus_t bus;
+//messagebus_t bus;
 	messagebus_init(&bus, &bus_lock, &bus_condvar);
 
-	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
+	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus,
+			"/imu");
 	imu_msg_t imu_values;
 
-	//wait 2 sec to be sure the e-puck is in a stable position
+//wait 2 sec to be sure the e-puck is in a stable position
 //	chThdSleepMilliseconds(2000);
 	calibrate_acc();
 	calibrate_ir();
@@ -135,11 +144,16 @@ int main(void) {
 		val_acc[1] = get_acceleration(Y_AXIS);
 		motor_gyro();
 //		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n", val_acc[0], val_acc[1]);
-		chprintf((BaseSequentialStream *)&SD3, "%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n", get_prox(FRONTLEFT45), get_prox(FRONTLEFT), get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
+		chprintf((BaseSequentialStream *) &SD3,
+				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
+				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
+				get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity left=%d\n", get_prox(FRONTLEFT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right=%d\n", get_prox(FRONTRIGHT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right45=%d\n", get_prox(FRONTRIGHT45));
+
 	}
+
 }
 
 //int main(void)

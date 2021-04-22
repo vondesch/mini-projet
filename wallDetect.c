@@ -27,10 +27,10 @@
 // - IR3 (back-right) + IR7 (front-left)
 
 uint8_t wall_left(void){
-	if (get_prox(FRONTLEFT)<=MINDISTANCE)
+	if (get_prox(FRONTLEFT)>=MINDISTANCE)
 		return true;
 
-	else if(get_prox(FRONTLEFT45)<=MINDISTANCE45)
+	else if(get_prox(FRONTLEFT45)>=MINDISTANCE45)
 		return true;
 
 	else
@@ -38,10 +38,10 @@ uint8_t wall_left(void){
 }
 
 uint8_t wall_right(void){
-	if(get_prox(FRONTRIGHT)<=MINDISTANCE)
+	if(get_prox(FRONTRIGHT)>=MINDISTANCE)
 		return true;
 
-	else if( get_prox(FRONTRIGHT45)<=MINDISTANCE45)
+	else if( get_prox(FRONTRIGHT45)>=MINDISTANCE45)
 		return true;
 
 	else
@@ -56,11 +56,11 @@ uint8_t wall_detected(void){
 }
 
 uint8_t obstacle_detect(void){
-	if(wall_detected){
-		if(get_prox(FRONTLEFT)<get_prox(FRONTRIGHT)){
+	if(wall_detected()){
+		if(get_prox(FRONTLEFT)>get_prox(FRONTRIGHT)){
 			return left;
 		}
-		else if(get_prox(FRONTLEFT45)<get_prox(FRONTRIGHT45)){
+		else if(get_prox(FRONTLEFT45)>get_prox(FRONTRIGHT45)){
 			return left;
 		}
 		else{
