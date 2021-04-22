@@ -11,12 +11,12 @@
 #include <sensors/proximity.h>
 #include <leds.h>
 
-#define FRONTLEFT 7				//proximity sensor front-left-5deg
-#define FRONTLEFT45 6			//proximity sensor front-left-45deg
-#define FRONTRIGHT 0			//proximity sensor front-left-5deg
-#define FRONTRIGHT45 1			//proximity sensor front-left-45deg
-#define MINDISTANCE 3
-#define MINDISTANCE45 2.5
+//#define FRONTLEFT 7				//proximity sensor front-left-5deg
+//#define FRONTLEFT45 6			//proximity sensor front-left-45deg
+//#define FRONTRIGHT 0			//proximity sensor front-left-5deg
+//#define FRONTRIGHT45 1			//proximity sensor front-left-45deg
+//#define MINDISTANCE 3
+//#define MINDISTANCE45 2.5
 
 #define INTENSITY 80
 #define OFF 0
@@ -55,39 +55,39 @@ uint8_t wall_detected(void){
 		return false;
 }
 
-void print_distances(void){
-	chprintf((BaseSequentialStream *)&SD3, "proximity left45=␣%d\n", get_prox(FRONTLEFT45));
-	chprintf((BaseSequentialStream *)&SD3, "proximity left=␣%d\n", get_prox(FRONTLEFT));
-	chprintf((BaseSequentialStream *)&SD3, "proximity right=␣%d\n", get_prox(FRONTRIGHT));
-	chprintf((BaseSequentialStream *)&SD3, "proximity right45=␣%d\n", get_prox(FRONTRIGHT45));
-}
+//void print_distances(void){
+//	chprintf((BaseSequentialStream *)&SD3, "proximity left45=␣%d\n", get_prox(FRONTLEFT45));
+//	chprintf((BaseSequentialStream *)&SD3, "proximity left=␣%d\n", get_prox(FRONTLEFT));
+//	chprintf((BaseSequentialStream *)&SD3, "proximity right=␣%d\n", get_prox(FRONTRIGHT));
+//	chprintf((BaseSequentialStream *)&SD3, "proximity right45=␣%d\n", get_prox(FRONTRIGHT45));
+//}
 
-void led_signal(void){
-	set_led(LED8, INTENSITY ); 		//led8 corresponds to setting all LEDS at the same time
-	delay(SystemCoreClock/16);
-	set_led(LED8, OFF);
-
-	set_led(LED1, INTENSITY); 		//setting every other LED to high
-	delay(SystemCoreClock/16);
-	set_led(LED1, OFF);
-
-	set_led(LED3, INTENSITY );
-	delay(SystemCoreClock/16);
-	set_led(LED3, OFF);
-
-	set_led(LED5, INTENSITY);
-	delay(SystemCoreClock/16);
-	set_led(LED5, OFF);
-
-	set_led(LED7, INTENSITY);
-	delay(SystemCoreClock/16);
-	set_led(LED7, OFF);
-
-	set_led(LED8, INTENSITY ); 		//setting all LEDS at the same time
-	delay(SystemCoreClock/16);
-	set_led(LED8, OFF);
-
-	set_led(LED8, INTENSITY ); 		//setting all LEDS at the same time
-	delay(SystemCoreClock/16);
-	set_led(LED8, OFF);
-}																					//add another LED function using green LEDs
+//void led_signal(void){
+//	set_led(LED8, INTENSITY ); 		//led8 corresponds to setting all LEDS at the same time
+//	delay(SystemCoreClock/16);
+//	set_led(LED8, OFF);
+//
+//	set_led(LED1, INTENSITY); 		//setting every other LED to high
+//	delay(SystemCoreClock/16);
+//	set_led(LED1, OFF);
+//
+//	set_led(LED3, INTENSITY );
+//	delay(SystemCoreClock/16);
+//	set_led(LED3, OFF);
+//
+//	set_led(LED5, INTENSITY);
+//	delay(SystemCoreClock/16);
+//	set_led(LED5, OFF);
+//
+//	set_led(LED7, INTENSITY);
+//	delay(SystemCoreClock/16);
+//	set_led(LED7, OFF);
+//
+//	set_led(LED8, INTENSITY ); 		//setting all LEDS at the same time
+//	delay(SystemCoreClock/16);
+//	set_led(LED8, OFF);
+//
+//	set_led(LED8, INTENSITY ); 		//setting all LEDS at the same time
+//	delay(SystemCoreClock/16);
+//	set_led(LED8, OFF);
+//}																					//add another LED function using green LEDs

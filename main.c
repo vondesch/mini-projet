@@ -35,11 +35,11 @@ void motor_gyro(void) {
 	uint8_t erreur = 1;
 
 //	if (get_acceleration(X_AXIS) < -erreur) {
-//		//rotation à droite
+//		//rotation Ã  droite
 //		left_motor_set_speed(vitesse);
 //		right_motor_set_speed(-vitesse);
 //	} else if (get_acceleration(X_AXIS) > erreur) {
-//		//rotation à gauche
+//		//rotation Ã  gauche
 //		left_motor_set_speed(-vitesse);
 //		right_motor_set_speed(vitesse);
 //	} else if(erreur + 0.2  > abs(get_acceleration(Y_AXIS)) || abs(get_acceleration(Y_AXIS)) > 0){
@@ -47,11 +47,11 @@ void motor_gyro(void) {
 
 	if (get_acceleration(Y_AXIS) < -erreur) {
 		if (get_acceleration(X_AXIS) < -erreur) {
-			//rotation à droite
+			//rotation Ã  droite
 			left_motor_set_speed(vitesse);
 			right_motor_set_speed(-vitesse);
 		} else if (get_acceleration(X_AXIS) > erreur) {
-			//rotation à gauche
+			//rotation Ã  gauche
 			left_motor_set_speed(-vitesse);
 			right_motor_set_speed(vitesse);
 		} else {
@@ -60,11 +60,11 @@ void motor_gyro(void) {
 			right_motor_set_speed(-vitesse);
 		}
 	} else if (get_acceleration(X_AXIS) > erreur) {
-		//rotation à droite
+		//rotation Ã  droite
 		left_motor_set_speed(vitesse);
 		right_motor_set_speed(-vitesse);
 	} else if (get_acceleration(X_AXIS) < -erreur) {
-		//rotation à gauche
+		//rotation Ã  gauche
 		left_motor_set_speed(-vitesse);
 		right_motor_set_speed(vitesse);
 	} else if (get_acceleration(Y_AXIS) > erreur) {
@@ -126,6 +126,7 @@ int main(void) {
 	//wait 2 sec to be sure the e-puck is in a stable position
 //	chThdSleepMilliseconds(2000);
 	calibrate_acc();
+	calibrate_ir();
 //	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
 	int16_t val_acc[2];
 	while (1) {
@@ -133,7 +134,11 @@ int main(void) {
 		val_acc[0] = get_acceleration(X_AXIS);
 		val_acc[1] = get_acceleration(Y_AXIS);
 		motor_gyro();
-		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n", val_acc[0], val_acc[1]);
+//		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n", val_acc[0], val_acc[1]);
+		chprintf((BaseSequentialStream *)&SD3, "%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n", get_prox(FRONTLEFT45), get_prox(FRONTLEFT), get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
+//		chprintf((BaseSequentialStream *)&SD3, "proximity left=%d\n", get_prox(FRONTLEFT));
+//		chprintf((BaseSequentialStream *)&SD3, "proximity right=%d\n", get_prox(FRONTRIGHT));
+//		chprintf((BaseSequentialStream *)&SD3, "proximity right45=%d\n", get_prox(FRONTRIGHT45));
 	}
 }
 
