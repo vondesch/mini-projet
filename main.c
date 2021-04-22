@@ -25,6 +25,7 @@
 
 #define vitesse 			300
 #define NB_SAMPLES_OFFSET 	200
+#define MOTOR_OBSTACLE		250
 
 messagebus_t bus;
 MUTEX_DECL(bus_lock);
@@ -33,7 +34,6 @@ CONDVAR_DECL(bus_condvar);
 void motor_gyro(void) {
 
 	uint16_t pos_motor_right;
-	uint16_t pos_motor_left;
 
 	uint8_t erreur = 1;
 
@@ -57,13 +57,13 @@ void motor_gyro(void) {
 			left_motor_set_speed(vitesse);
 			right_motor_set_speed(-vitesse);
 		}
-	}
-	else if (obstacle_in_range()) {
-//		right_motor_get_pos
-		left_motor_set_speed(vitesse);
-		right_motor_set_speed(vitesse);
-	}
-	else {
+	} else if (obstacle_in_range()) {
+		pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
+		while (right_motor_get_pos() != pos_motor_right) {
+			left_motor_set_speed(vitesse);
+			right_motor_set_speed(vitesse);
+		}
+	} else {
 
 		if (get_acceleration(Y_AXIS) < -erreur) {
 			if (get_acceleration(X_AXIS) < -erreur) {
