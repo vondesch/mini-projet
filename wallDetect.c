@@ -26,6 +26,16 @@
 // - IR2 (right) + IR6 (front-left-45deg)
 // - IR3 (back-right) + IR7 (front-left)
 
+uint8_t obstacle_in_range(){
+	if(get_prox(RIGHT)>RANGE || get_prox(LEFT)>RANGE){
+		return true;
+	}
+	else {
+		return false;
+	}
+
+}
+
 uint8_t wall_left(void){
 	if (get_prox(FRONTLEFT)>=MINDISTANCE)
 		return true;
