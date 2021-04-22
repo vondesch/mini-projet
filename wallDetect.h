@@ -12,8 +12,9 @@
 #define FRONTLEFT45 6			//proximity sensor front-left-45deg
 #define FRONTRIGHT 0			//proximity sensor front-left-5deg
 #define FRONTRIGHT45 1			//proximity sensor front-left-45deg
-#define MINDISTANCE 3
-#define MINDISTANCE45 2.5
+#define MINDISTANCE 100
+#define MINDISTANCE45 100
+enum {straight, left, right};
 
  /**
  * @brief   Checks if an obstacle is located somewhere in to the left ahead of the robot
@@ -29,6 +30,9 @@ uint8_t wall_right(void);
  * @brief   Checks if an obstacle is located somewhere in front of the robot
  */
 uint8_t wall_detected(void);
+
+uint8_t obstacle_detect(void);
+
 
 												//debugging purpose only
 //void print_distances(void);

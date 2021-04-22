@@ -55,6 +55,23 @@ uint8_t wall_detected(void){
 		return false;
 }
 
+uint8_t obstacle_detect(void){
+	if(wall_detected){
+		if(get_prox(FRONTLEFT)<get_prox(FRONTRIGHT)){
+			return left;
+		}
+		else if(get_prox(FRONTLEFT45)<get_prox(FRONTRIGHT45)){
+			return left;
+		}
+		else{
+			return right;
+		}
+	}
+	else{
+		return straight;
+	}
+}
+
 //void print_distances(void){
 //	chprintf((BaseSequentialStream *)&SD3, "proximity left45=␣%d\n", get_prox(FRONTLEFT45));
 //	chprintf((BaseSequentialStream *)&SD3, "proximity left=␣%d\n", get_prox(FRONTLEFT));
