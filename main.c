@@ -45,20 +45,20 @@ void motor_gyro(void) {
 //	} else if(erreur + 0.2  > abs(get_acceleration(Y_AXIS)) || abs(get_acceleration(Y_AXIS)) > 0){
 //		chThdSleepMilliseconds(200);
 	if (obstacle_detect() == right) {
-		while (!obstacle_in_range) {
+		while (!obstacle_in_range()) {
 			left_motor_set_speed(-vitesse);
 			right_motor_set_speed(vitesse);
 		}
-		while (obstacle_in_range) {
+		while (obstacle_in_range()) {
 			left_motor_set_speed(vitesse);
 			right_motor_set_speed(vitesse);
 		}
 	} else if (obstacle_detect() == left) {
-		while (!obstacle_in_range) {
+		while (!obstacle_in_range()) {
 			left_motor_set_speed(vitesse);
 			right_motor_set_speed(-vitesse);
 		}
-		while (obstacle_in_range) {
+		while (obstacle_in_range()) {
 			left_motor_set_speed(vitesse);
 			right_motor_set_speed(vitesse);
 		}
