@@ -45,11 +45,23 @@ void motor_gyro(void) {
 //	} else if(erreur + 0.2  > abs(get_acceleration(Y_AXIS)) || abs(get_acceleration(Y_AXIS)) > 0){
 //		chThdSleepMilliseconds(200);
 	if (obstacle_detect() == right) {
-		left_motor_set_speed(-vitesse);
-		right_motor_set_speed(vitesse);
-	} else if (obstacle_detect() == right) {
-		left_motor_set_speed(vitesse);
-		right_motor_set_speed(-vitesse);
+		while (!obstacle_in_range) {
+			left_motor_set_speed(-vitesse);
+			right_motor_set_speed(vitesse);
+		}
+		while (obstacle_in_range) {
+			left_motor_set_speed(vitesse);
+			right_motor_set_speed(vitesse);
+		}
+	} else if (obstacle_detect() == left) {
+		while (!obstacle_in_range) {
+			left_motor_set_speed(vitesse);
+			right_motor_set_speed(-vitesse);
+		}
+		while (obstacle_in_range) {
+			left_motor_set_speed(vitesse);
+			right_motor_set_speed(vitesse);
+		}
 	} else {
 
 		if (get_acceleration(Y_AXIS) < -erreur) {
@@ -128,8 +140,7 @@ int main(void) {
 //messagebus_t bus;
 	messagebus_init(&bus, &bus_lock, &bus_condvar);
 
-	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus,
-			"/imu");
+	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
 	imu_msg_t imu_values;
 
 //wait 2 sec to be sure the e-puck is in a stable position
@@ -144,9 +155,7 @@ int main(void) {
 		val_acc[1] = get_acceleration(Y_AXIS);
 		motor_gyro();
 //		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n", val_acc[0], val_acc[1]);
-		chprintf((BaseSequentialStream *) &SD3,
-				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
-				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
+		chprintf((BaseSequentialStream *) &SD3, "%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n", get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
 				get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity left=%d\n", get_prox(FRONTLEFT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right=%d\n", get_prox(FRONTRIGHT));
