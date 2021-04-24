@@ -59,7 +59,7 @@ void get_position(void) {
 
 }
 
-uint8_t detect_movement(void){
+uint8_t detect_movement(void){											// jamais utilise  on peut l enlever
 	//initialisation gyroscope
 	imu_start();
 
