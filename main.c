@@ -32,7 +32,7 @@ messagebus_t bus;
 MUTEX_DECL(bus_lock);
 CONDVAR_DECL(bus_condvar);
 
-void object_PI(uint16_t speed) {
+void move(uint16_t speed) {
 	uint16_t pos_motor_right;
 	uint16_t pos_motor_left;
 
@@ -41,15 +41,15 @@ void object_PI(uint16_t speed) {
 	if (free_path() == straight) { //no obstacle in front of robot
 		if (get_acceleration(Y_AXIS) < -error) {
 			if (get_acceleration(X_AXIS) < -error) {
-				//rotation à droite
+				//cw rotation
 				left_motor_set_speed(-speed);
 				right_motor_set_speed(+speed);
 			} else if (get_acceleration(X_AXIS) > error) {
-				//rotation à gauche
+				//ccw rotation
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
 			} else {
-				//avance
+				//move forward
 				left_motor_set_speed(speed);
 				right_motor_set_speed(speed);
 			}
@@ -72,7 +72,6 @@ void object_PI(uint16_t speed) {
 	}
 
 	else if (free_path() == left) {
-		led_signal(); 				//free left
 		while (obstacle_in_range(FRONTRIGHT45)) { // rotate to get goal distance
 			left_motor_set_speed(-speed);
 			right_motor_set_speed(speed);
@@ -82,9 +81,7 @@ void object_PI(uint16_t speed) {
 			left_motor_set_speed(speed);
 			right_motor_set_speed(0.8 * speed);					//magic number
 		}
-		led_signal();
 	} else if (free_path() == right) { //free right
-		led_signal();
 		while (obstacle_in_range(FRONTLEFT45)) { // rotate to get goal distance
 			left_motor_set_speed(speed);
 			right_motor_set_speed(-speed);
@@ -95,8 +92,6 @@ void object_PI(uint16_t speed) {
 			left_motor_set_speed(0.8 * speed);			// magic number
 			right_motor_set_speed(speed);
 		}
-		led_signal();
-
 	} else {
 		left_motor_set_speed(0);
 		right_motor_set_speed(0);
@@ -207,7 +202,7 @@ int main(void) {
 	serial_start();
 //starts timer 12
 	timer12_start();
-//inits the motors
+//initializes the motors
 	motors_init();
 
 	i2c_start();
@@ -234,7 +229,7 @@ int main(void) {
 		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
 		val_acc[0] = get_acceleration(X_AXIS);
 		val_acc[1] = get_acceleration(Y_AXIS);
-		//motor_gyro();
+		move(speed);
 //		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n", val_acc[0], val_acc[1]);
 		chprintf((BaseSequentialStream *) &SD3,
 				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
@@ -243,8 +238,6 @@ int main(void) {
 //		chprintf((BaseSequentialStream *)&SD3, "proximity left=%d\n", get_prox(FRONTLEFT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right=%d\n", get_prox(FRONTRIGHT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right45=%d\n", get_prox(FRONTRIGHT45));
-
-		object_PI(speed);
 
 	}
 

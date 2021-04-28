@@ -48,7 +48,7 @@ float PI_correction(uint8_t sensor);
 
 uint8_t free_path();
 
-uint16_t speed_select();
+uint16_t speed_select();		//
 												//debugging purpose only
 //void print_distances(void);
 

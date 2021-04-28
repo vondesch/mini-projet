@@ -1,5 +1,3 @@
 remove all tp files 
 
-implement distance detection in order to stop movement when obstacle is detected
-
-create functino that modifies direction / speed depending on gyro measurements
+add stop condition if no path leads out and  the robot is stuck
