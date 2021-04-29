@@ -13,9 +13,8 @@
 #include <math.h>
 
 
-
+#include <move.h>
 #include <arm_math.h>
-#include <gyro.h>
 #include <sensors/imu.h>
 #include <sensors/proximity.h>
 #include <msgbus/messagebus.h>
@@ -23,14 +22,88 @@
 #include <selector.h>
 
 #include <wallDetect.h>
+#include "move.h"
 
-#define NB_SAMPLES_OFFSET 200
-#define MOTOR_OBSTACLE 400
 
 messagebus_t bus;
 MUTEX_DECL(bus_lock);
 CONDVAR_DECL(bus_condvar);
 
+#define NB_SAMPLES_OFFSET 200
+#define MOTOR_OBSTACLE 400
+
+static THD_WORKING_AREA(waMoveThd, 128);
+static THD_FUNCTION(MoveThd, arg) {
+	(void) arg;
+	chRegSetThreadName(__FUNCTION__);
+
+	uint16_t speed = 600;
+
+	uint16_t pos_motor_right;
+	uint16_t pos_motor_left;
+	uint8_t error = 1;					// create define
+
+		if (free_path() == straight) { //no obstacle in front of robot
+			if (get_acceleration(Y_AXIS) < 0) {
+				if (get_acceleration(X_AXIS) < 0) {
+					//cw rotation
+					left_motor_set_speed(-speed);
+					right_motor_set_speed(+speed);
+				} else {
+					//ccw rotation
+					left_motor_set_speed(speed);
+					right_motor_set_speed(-speed);
+				}
+			} else if (get_acceleration(X_AXIS) > error) {
+				//cw rotation
+				left_motor_set_speed(speed);
+				right_motor_set_speed(-speed);
+			} else if (get_acceleration(X_AXIS) < -error) {
+				//ccw rotation
+				left_motor_set_speed(-speed);
+				right_motor_set_speed(speed);
+			} else if (get_acceleration(Y_AXIS) > 0) {
+				//move forward
+				left_motor_set_speed(speed);
+				right_motor_set_speed(speed);
+			} else {
+				left_motor_set_speed(0);
+				right_motor_set_speed(0);
+			}
+		}
+
+		else if (free_path() == left) {
+			while (obstacle_in_range(FRONTRIGHT45)) { // rotate to get goal distance
+				left_motor_set_speed(-speed);
+				right_motor_set_speed(speed);
+			}
+			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
+			while (left_motor_get_pos() != pos_motor_left
+					&& free_path() == straight) {
+				left_motor_set_speed(speed);
+				right_motor_set_speed(0.8 * speed);				//magic number
+			}
+		} else if (free_path() == right) { //free right
+			while (obstacle_in_range(FRONTLEFT45)) { // rotate to get goal distance
+				left_motor_set_speed(speed);
+				right_motor_set_speed(-speed);
+			}
+			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
+
+			while (right_motor_get_pos() != pos_motor_right && free_path() == 1) {
+				left_motor_set_speed(0.8 * speed);			// magic number
+				right_motor_set_speed(speed);
+			}
+		} else {
+			left_motor_set_speed(0);
+			right_motor_set_speed(0);
+		}
+
+		chThdSleepMilliseconds(5);
+}
+
+
+/*
 void move(uint16_t speed) {
 	uint16_t pos_motor_right;
 	uint16_t pos_motor_left;
@@ -92,6 +165,7 @@ void move(uint16_t speed) {
 		right_motor_set_speed(0);
 	}
 }
+*/
 
 /*void motor_gyro(void) {
 
@@ -207,7 +281,7 @@ int main(void) {
 	proximity_start();
 
 //init_selector();
-	uint16_t speed = 600; //speed_select();//define variable speed using the selector
+	//uint16_t speed = 600; //speed_select();//define variable speed using the selector
 
 //messagebus_t bus;
 	messagebus_init(&bus, &bus_lock, &bus_condvar);
@@ -218,13 +292,19 @@ int main(void) {
 
 	calibrate_acc();
 	calibrate_ir();
+
+																					//execution of threads threads
+	chThdCreateStatic(waMoveThd, sizeof(waMoveThd), NORMALPRIO, MoveThd, NULL);
+
+
+
 //	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
 	int16_t val_acc[2];
 	while (1) {
 		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
 		val_acc[0] = get_acceleration(X_AXIS);
 		val_acc[1] = get_acceleration(Y_AXIS);
-		move(speed);
+		//move(speed);
 		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n", val_acc[0], val_acc[1]);
 //		chprintf((BaseSequentialStream *) &SD3,
 //				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
