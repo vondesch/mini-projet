@@ -43,13 +43,13 @@ uint8_t free_path() {
 			&& get_prox(FRONTLEFT45) < MINDISTANCE45) {
 		return straight;
 	}	//free right
-	else if (get_prox(FRONTRIGHT45) < MINDISTANCE
-			&& get_prox(FRONTLEFT45) > MINDISTANCE) {
+	else if (get_prox(FRONTRIGHT45) < MINDISTANCE45
+			&& get_prox(FRONTLEFT45) > MINDISTANCE45) {
 		return left;
 	}
 	//free left
-	else if (get_prox(FRONTRIGHT45) > MINDISTANCE
-			&& get_prox(FRONTLEFT45) < MINDISTANCE) {
+	else if (get_prox(FRONTRIGHT45) > MINDISTANCE45
+			&& get_prox(FRONTLEFT45) < MINDISTANCE45) {
 		return right;
 	}
 
