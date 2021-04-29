@@ -25,30 +25,18 @@
 
 enum {stuck, straight, left, right};
 
- /**
- * @brief   Checks if an obstacle is located somewhere in to the left ahead of the robot
- */
-uint8_t wall_left(void);
-
-/**
-* @brief   Checks if an obstacle is located somewhere to the right ahead of the robot
-*/
-uint8_t wall_right(void);
-
- /**
- * @brief   Checks if an obstacle is located somewhere in front of the robot
- */
-uint8_t wall_detected(void);
-
-// uint8_t obstacle_detect(void);
 
 uint8_t obstacle_in_range(uint8_t sensor);
 
 float PI_correction(uint8_t sensor);
 
-uint8_t free_path();
+void free_path_start(void);
 
-uint16_t speed_select();		//
+uint8_t get_free_path(void);
+
+
+
+uint16_t speed_select(void);		//
 												//debugging purpose only
 //void print_distances(void);
 

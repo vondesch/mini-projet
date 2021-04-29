@@ -27,6 +27,8 @@
 // - IR2 (right) + IR6 (front-left-45deg)
 // - IR3 (back-right) + IR7 (front-left)
 
+static uint8_t freePath;
+
 uint8_t obstacle_in_range(uint8_t sensor) {
 	if (get_prox(sensor) > RANGE) {
 		return true;
@@ -36,30 +38,49 @@ uint8_t obstacle_in_range(uint8_t sensor) {
 
 }
 
-uint8_t free_path() {
-	//free forward   smaller value means larger distance
-	if (get_prox(FRONTRIGHT) < MINDISTANCE && get_prox(FRONTLEFT) < MINDISTANCE
-			&& get_prox(FRONTRIGHT45) < MINDISTANCE45
-			&& get_prox(FRONTLEFT45) < MINDISTANCE45) {
-		return straight;
-	}	//free right
-	else if (get_prox(FRONTRIGHT45) < MINDISTANCE45
-			&& get_prox(FRONTLEFT45) > MINDISTANCE45) {
-		return left;
-	}
-	//free left
-	else if (get_prox(FRONTRIGHT45) > MINDISTANCE45
-			&& get_prox(FRONTLEFT45) < MINDISTANCE45) {
-		return right;
+static THD_WORKING_AREA(waFreePathThd, 128);
+static THD_FUNCTION(FreePathThd, arg) {
+	(void) arg;
+	chRegSetThreadName(__FUNCTION__);
+
+	while (1) {
+		//free forward   smaller value means larger distance
+		if (get_prox(FRONTRIGHT) < MINDISTANCE
+				&& get_prox(FRONTLEFT) < MINDISTANCE
+				&& get_prox(FRONTRIGHT45) < MINDISTANCE45
+				&& get_prox(FRONTLEFT45) < MINDISTANCE45) {
+			freePath = straight;
+		}	//free right
+		else if (get_prox(FRONTRIGHT45) < MINDISTANCE45
+				&& get_prox(FRONTLEFT45) > MINDISTANCE45) {
+			freePath = left;
+		}
+		//free left
+		else if (get_prox(FRONTRIGHT45) > MINDISTANCE45
+				&& get_prox(FRONTLEFT45) < MINDISTANCE45) {
+			freePath = right;
+		}
+
+		else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT)) {//obstacle closer to the right than to the left sensor
+			freePath = left;
+		}
+
+		else {
+			freePath = right;
+		}
+		chThdSleepMilliseconds(4);
 	}
 
-	else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT)) {//obstacle closer to the right than to the left sensor
-		return left;
-	}
+}
 
-	else {
-		return right;
-	}
+void free_path_start() {
+	chThdCreateStatic(waFreePathThd, sizeof(waFreePathThd), NORMALPRIO,
+			FreePathThd, NULL);
+
+}
+
+uint8_t get_free_path() {
+	return freePath;
 }
 
 uint16_t speed_select() {
@@ -109,35 +130,6 @@ void led_signal(void) {
 	toggle_rgb_led(LED4, BLUE_LED, INTENSITY);
 	toggle_rgb_led(LED6, BLUE_LED, INTENSITY); 		//toggles rgb leds
 	toggle_rgb_led(LED8, BLUE_LED, INTENSITY);
-}
-
-uint8_t wall_left(void) {
-	if (get_prox(FRONTLEFT) >= MINDISTANCE)
-		return true;
-
-	else if (get_prox(FRONTLEFT45) >= MINDISTANCE45)
-		return true;
-
-	else
-		return false;
-}
-
-uint8_t wall_right(void) {
-	if (get_prox(FRONTRIGHT) >= MINDISTANCE)
-		return true;
-
-	else if (get_prox(FRONTRIGHT45) >= MINDISTANCE45)
-		return true;
-
-	else
-		return false;
-}
-
-uint8_t wall_detected(void) {
-	if (wall_left() == true || wall_right() == true)
-		return true;
-	else
-		return false;
 }
 
 float PI_correction(uint8_t sensor) {

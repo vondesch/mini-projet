@@ -12,7 +12,6 @@
 #include <audio/microphone.h>
 #include <math.h>
 
-
 #include <move.h>
 #include <arm_math.h>
 #include <sensors/imu.h>
@@ -23,7 +22,6 @@
 
 #include <wallDetect.h>
 #include "move.h"
-
 
 messagebus_t bus;
 MUTEX_DECL(bus_lock);
@@ -43,7 +41,8 @@ static THD_FUNCTION(MoveThd, arg) {
 	uint16_t pos_motor_left;
 	uint8_t error = 1;					// create define
 
-		if (free_path() == straight) { //no obstacle in front of robot
+	while (1) {
+		if (get_free_path() == straight) { //no obstacle in front of robot
 			if (get_acceleration(Y_AXIS) < 0) {
 				if (get_acceleration(X_AXIS) < 0) {
 					//cw rotation
@@ -72,25 +71,26 @@ static THD_FUNCTION(MoveThd, arg) {
 			}
 		}
 
-		else if (free_path() == left) {
+		else if (get_free_path() == left) {
 			while (obstacle_in_range(FRONTRIGHT45)) { // rotate to get goal distance
 				left_motor_set_speed(-speed);
 				right_motor_set_speed(speed);
 			}
 			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
 			while (left_motor_get_pos() != pos_motor_left
-					&& free_path() == straight) {
+					&& get_free_path() == straight) {
 				left_motor_set_speed(speed);
 				right_motor_set_speed(0.8 * speed);				//magic number
 			}
-		} else if (free_path() == right) { //free right
+		} else if (get_free_path() == right) { //free right
 			while (obstacle_in_range(FRONTLEFT45)) { // rotate to get goal distance
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
 			}
 			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
 
-			while (right_motor_get_pos() != pos_motor_right && free_path() == 1) {
+			while (right_motor_get_pos() != pos_motor_right
+					&& get_free_path() == 1) {
 				left_motor_set_speed(0.8 * speed);			// magic number
 				right_motor_set_speed(speed);
 			}
@@ -100,72 +100,72 @@ static THD_FUNCTION(MoveThd, arg) {
 		}
 
 		chThdSleepMilliseconds(5);
+	}
 }
-
 
 /*
-void move(uint16_t speed) {
-	uint16_t pos_motor_right;
-	uint16_t pos_motor_left;
+ void move(uint16_t speed) {
+ uint16_t pos_motor_right;
+ uint16_t pos_motor_left;
 
-	uint8_t error = 1;					// create define
+ uint8_t error = 1;					// create define
 
-	if (free_path() == straight) { //no obstacle in front of robot
-		if (get_acceleration(Y_AXIS) < 0) {
-			if (get_acceleration(X_AXIS) < 0) {
-				//cw rotation
-				left_motor_set_speed(-speed);
-				right_motor_set_speed(+speed);
-			} else {
-				//ccw rotation
-				left_motor_set_speed(speed);
-				right_motor_set_speed(-speed);
-			}
-		} else if (get_acceleration(X_AXIS) > error) {
-			//cw rotation
-			left_motor_set_speed(speed);
-			right_motor_set_speed(-speed);
-		} else if (get_acceleration(X_AXIS) < -error) {
-			//ccw rotation
-			left_motor_set_speed(-speed);
-			right_motor_set_speed(speed);
-		} else if (get_acceleration(Y_AXIS) > 0) {
-			//move forward
-			left_motor_set_speed(speed);
-			right_motor_set_speed(speed);
-		} else {
-			left_motor_set_speed(0);
-			right_motor_set_speed(0);
-		}
-	}
+ if (free_path() == straight) { //no obstacle in front of robot
+ if (get_acceleration(Y_AXIS) < 0) {
+ if (get_acceleration(X_AXIS) < 0) {
+ //cw rotation
+ left_motor_set_speed(-speed);
+ right_motor_set_speed(+speed);
+ } else {
+ //ccw rotation
+ left_motor_set_speed(speed);
+ right_motor_set_speed(-speed);
+ }
+ } else if (get_acceleration(X_AXIS) > error) {
+ //cw rotation
+ left_motor_set_speed(speed);
+ right_motor_set_speed(-speed);
+ } else if (get_acceleration(X_AXIS) < -error) {
+ //ccw rotation
+ left_motor_set_speed(-speed);
+ right_motor_set_speed(speed);
+ } else if (get_acceleration(Y_AXIS) > 0) {
+ //move forward
+ left_motor_set_speed(speed);
+ right_motor_set_speed(speed);
+ } else {
+ left_motor_set_speed(0);
+ right_motor_set_speed(0);
+ }
+ }
 
-	else if (free_path() == left) {
-		while (obstacle_in_range(FRONTRIGHT45)) { // rotate to get goal distance
-			left_motor_set_speed(-speed);
-			right_motor_set_speed(speed);
-		}
-		pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
-		while (left_motor_get_pos() != pos_motor_left && free_path() == straight) {
-			left_motor_set_speed(speed);
-			right_motor_set_speed(0.8 * speed);					//magic number
-		}
-	} else if (free_path() == right) { //free right
-		while (obstacle_in_range(FRONTLEFT45)) { // rotate to get goal distance
-			left_motor_set_speed(speed);
-			right_motor_set_speed(-speed);
-		}
-		pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
+ else if (free_path() == left) {
+ while (obstacle_in_range(FRONTRIGHT45)) { // rotate to get goal distance
+ left_motor_set_speed(-speed);
+ right_motor_set_speed(speed);
+ }
+ pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
+ while (left_motor_get_pos() != pos_motor_left && free_path() == straight) {
+ left_motor_set_speed(speed);
+ right_motor_set_speed(0.8 * speed);					//magic number
+ }
+ } else if (free_path() == right) { //free right
+ while (obstacle_in_range(FRONTLEFT45)) { // rotate to get goal distance
+ left_motor_set_speed(speed);
+ right_motor_set_speed(-speed);
+ }
+ pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
 
-		while (right_motor_get_pos() != pos_motor_right && free_path() == 1) {
-			left_motor_set_speed(0.8 * speed);			// magic number
-			right_motor_set_speed(speed);
-		}
-	} else {
-		left_motor_set_speed(0);
-		right_motor_set_speed(0);
-	}
-}
-*/
+ while (right_motor_get_pos() != pos_motor_right && free_path() == 1) {
+ left_motor_set_speed(0.8 * speed);			// magic number
+ right_motor_set_speed(speed);
+ }
+ } else {
+ left_motor_set_speed(0);
+ right_motor_set_speed(0);
+ }
+ }
+ */
 
 /*void motor_gyro(void) {
 
@@ -293,10 +293,9 @@ int main(void) {
 	calibrate_acc();
 	calibrate_ir();
 
-																					//execution of threads threads
+	//execution of threads threads
+	free_path_start();
 	chThdCreateStatic(waMoveThd, sizeof(waMoveThd), NORMALPRIO, MoveThd, NULL);
-
-
 
 //	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
 	int16_t val_acc[2];
@@ -305,7 +304,8 @@ int main(void) {
 		val_acc[0] = get_acceleration(X_AXIS);
 		val_acc[1] = get_acceleration(Y_AXIS);
 		//move(speed);
-		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n", val_acc[0], val_acc[1]);
+		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",
+				val_acc[0], val_acc[1]);
 //		chprintf((BaseSequentialStream *) &SD3,
 //				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
 //				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
@@ -317,7 +317,6 @@ int main(void) {
 	}
 
 }
-
 
 #define STACK_CHK_GUARD 0xe2dee396
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
