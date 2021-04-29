@@ -16,12 +16,14 @@
 #define LEFT 5					//proximity sensor left
 
 #define RANGE 110
-#define MINDISTANCE 160
-#define MINDISTANCE45 150
+#define CORR45 0.9
+#define MINDISTANCESEESAW 150
+#define MINDISTANCEGAME 400
 
-#define GOAL 80
-#define KP 5
-#define KI 5
+#define SPEED0 600
+#define SPEED1	400
+#define SPEED2 700
+#define SPEED3 800
 
 enum {stuck, straight, left, right};
 
@@ -36,7 +38,7 @@ uint8_t get_free_path(void);
 
 
 
-uint16_t speed_select(void);		//
+void speed_select_start(void);
 												//debugging purpose only
 //void print_distances(void);
 

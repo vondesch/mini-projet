@@ -280,7 +280,7 @@ int main(void) {
 	imu_start();
 	proximity_start();
 
-//init_selector();
+	speed_select_start();
 	//uint16_t speed = 600; //speed_select();//define variable speed using the selector
 
 //messagebus_t bus;

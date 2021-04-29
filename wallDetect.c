@@ -28,6 +28,8 @@
 // - IR3 (back-right) + IR7 (front-left)
 
 static uint8_t freePath;
+static uint16_t mindistance;
+static uint16_t speed;
 
 uint8_t obstacle_in_range(uint8_t sensor) {
 	if (get_prox(sensor) > RANGE) {
@@ -45,19 +47,19 @@ static THD_FUNCTION(FreePathThd, arg) {
 
 	while (1) {
 		//free forward   smaller value means larger distance
-		if (get_prox(FRONTRIGHT) < MINDISTANCE
-				&& get_prox(FRONTLEFT) < MINDISTANCE
-				&& get_prox(FRONTRIGHT45) < MINDISTANCE45
-				&& get_prox(FRONTLEFT45) < MINDISTANCE45) {
+		if (get_prox(FRONTRIGHT)
+				< mindistance&& get_prox(FRONTLEFT) < mindistance
+				&& get_prox(FRONTRIGHT45) < mindistance*CORR45
+				&& get_prox(FRONTLEFT45) < mindistance*CORR45) {
 			freePath = straight;
 		}	//free right
-		else if (get_prox(FRONTRIGHT45) < MINDISTANCE45
-				&& get_prox(FRONTLEFT45) > MINDISTANCE45) {
+		else if (get_prox(FRONTRIGHT45) < mindistance * CORR45
+				&& get_prox(FRONTLEFT45) > mindistance * CORR45) {
 			freePath = left;
 		}
 		//free left
-		else if (get_prox(FRONTRIGHT45) > MINDISTANCE45
-				&& get_prox(FRONTLEFT45) < MINDISTANCE45) {
+		else if (get_prox(FRONTRIGHT45) > mindistance * CORR45
+				&& get_prox(FRONTLEFT45) < mindistance * CORR45) {
 			freePath = right;
 		}
 
@@ -79,50 +81,73 @@ void free_path_start() {
 
 }
 
-uint8_t get_free_path() {
+void set_mindistance(uint16_t distance) {
+	mindistance = distance;
+}
+uint8_t get_free_path(void) {
 	return freePath;
 }
 
-uint16_t speed_select() {
-	uint8_t selector = get_selector();
+uint16_t get_speed(void) {
+	return speed;
+}
 
-	while (selector == 10) {//speed adjustment possible for 3 seconds add timer!!
-		switch (selector) {
+static THD_WORKING_AREA(waSpeedSelectThd, 128);
+static THD_FUNCTION(SpeedSelectThd, arg) {
+	(void) arg;
+	chRegSetThreadName(__FUNCTION__);
+
+	while (1) {
+		switch (get_selector()) {
 		case 0:
-			set_led(LED8, OFF);
+			set_led(LED8, OFF);					//set mode to seesaw
 			set_led(LED1, INTENSITY);
+			set_led(LED3, INTENSITY);
+			set_led(LED5, INTENSITY);
+			set_led(LED7, INTENSITY);
+			set_mindistance(MINDISTANCESEESAW);
+			speed = SPEED0;
 			break;
 		case 1:
 			set_led(LED8, OFF);
-			set_led(LED3, INTENSITY);
+			set_led(LED1, INTENSITY);			//set mode to game at speed0
+			set_mindistance(MINDISTANCEGAME);
+			speed = SPEED0;
 			break;
 		case 2:
-			set_led(LED8, OFF);
-			set_led(LED5, INTENSITY);
+			set_led(LED8, OFF);					//set mode to game at speed1
+			set_led(LED3, INTENSITY);
+			set_mindistance(MINDISTANCEGAME);
+			speed = SPEED1;
 			break;
 		case 3:
-			set_led(LED8, OFF);
+			set_led(LED8, OFF);					//set mode to game at speed 2
+			set_led(LED5, INTENSITY);
+			set_mindistance(MINDISTANCEGAME);
+			speed = SPEED2;
+			break;
+		case 4:
+			set_led(LED8, OFF);					//set mode to game at speed 3
 			set_led(LED7, INTENSITY);
+			set_mindistance(MINDISTANCEGAME);
+			speed = SPEED3;
 			break;
 		default:
-			break;
+			set_led(LED8, OFF);
+			set_led(LED1, INTENSITY);
+			set_mindistance(MINDISTANCEGAME);
+			speed = 600;
+
 		}
-		set_led(LED8, OFF);
-	}
-
-	switch (selector) {
-	case 0:
-		return 200;
-	case 1:
-		return 400;
-	case 2:
-		return 600;
-	case 3:
-		return 800;
-	default:
-		return 600;
+		chThdSleepMilliseconds(1000);
 
 	}
+}
+
+void speed_select_start() {
+	chThdCreateStatic(waSpeedSelectThd, sizeof(waSpeedSelectThd), NORMALPRIO,
+			SpeedSelectThd, NULL);
+
 }
 
 void led_signal(void) {
@@ -137,6 +162,10 @@ float PI_correction(uint8_t sensor) {
 	// rotate();		// until tangential (distance 45 and 90deg)
 	//PI keep 45 deg sensor measurements constant
 	// while loop break if accelerometer facing highest slope or if other obstacle in front or if certain distance passed
+
+	int GOAL = 80;
+	int KP = 5;
+	int KI = 5;
 	int error = 0;
 	float correction = 1;
 
