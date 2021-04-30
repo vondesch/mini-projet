@@ -42,7 +42,7 @@ static THD_FUNCTION(MoveThd, arg) {
 	uint16_t pos_motor_right;
 	uint16_t pos_motor_left;
 	uint8_t error = 1;					// create define
-
+	while (1){
 		if (free_path() == straight) { //no obstacle in front of robot
 			if (get_acceleration(Y_AXIS) < 0) {
 				if (get_acceleration(X_AXIS) < 0) {
@@ -100,6 +100,7 @@ static THD_FUNCTION(MoveThd, arg) {
 		}
 
 		chThdSleepMilliseconds(5);
+	}
 }
 
 

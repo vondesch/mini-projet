@@ -46,9 +46,9 @@ uint8_t obstacle_in_range(uint8_t sensor);
 
 float PI_correction(uint8_t sensor);
 
-uint8_t free_path();
+uint8_t free_path(void);
 
-uint16_t speed_select();		//
+uint16_t speed_select(void);		//
 												//debugging purpose only
 //void print_distances(void);
 
