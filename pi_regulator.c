@@ -26,8 +26,8 @@
 #define ROTATION_COEFF			10
 
 
-//simple PI regulator implementation
-int16_t pi_regulator(float distance){
+//PID regulator
+int16_t pid_regulator(float deviation){
 
 	float error = 0;
 	float speed = 0;
@@ -35,7 +35,7 @@ int16_t pi_regulator(float distance){
 	static float sum_error = 0;
 	static float previous_error =0;
 
-	error = distance;
+	error = deviation;
 
 	//disables the PI regulator if the error is to small
 	//this avoids to always move as we cannot exactly be where we want and

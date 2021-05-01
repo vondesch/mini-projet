@@ -8,7 +8,7 @@
 #ifndef PI_REGULATOR_H_
 #define PI_REGULATOR_H_
 
-int16_t pi_regulator(float distance);
+int16_t pid_regulator(float deviation);
 
 
 

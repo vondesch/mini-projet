@@ -43,25 +43,28 @@ static THD_FUNCTION(MoveThd, arg) {
 
 	uint16_t pos_motor_right;
 	uint16_t pos_motor_left;
-	int16_t speed_pi;
+	int16_t speed_pid;
 	static uint16_t i = 0;
 	static uint16_t j = 0;
 
 	while (1) {
 		if (get_free_path() == straight) { //no obstacle in front of robot
+			//clockwise rotation
 			if (get_acceleration(X_AXIS) > 0){
-				speed_pi = pi_regulator(get_acceleration(X_AXIS));
+				speed_pid = pid_regulator(get_acceleration(X_AXIS));
 				left_motor_set_speed(speed);
-				right_motor_set_speed(speed - speed_pi);
+				right_motor_set_speed(speed - speed_pid);
 			}
+			//counter clockwise rotation
 			else {
-				speed_pi = pi_regulator(get_acceleration(X_AXIS));
-				left_motor_set_speed(speed + speed_pi);
+				speed_pid = pid_regulator(get_acceleration(X_AXIS));
+				left_motor_set_speed(speed + speed_pid);
 				right_motor_set_speed(speed);
 			}
-
-			if (get_acceleration(Y_AXIS) < -2 && speed_pi == 0) {
+			//case where the robot is straight on the opposite direction
+			if (get_acceleration(Y_AXIS) < -2 && speed_pid == 0) {
 				i++;
+				//annulation of fluctuation when plane
 				if (i==60000 || j <= 60000){
 					left_motor_set_speed(-speed);
 					right_motor_set_speed(speed);
