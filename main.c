@@ -19,6 +19,7 @@
 #include <msgbus/messagebus.h>
 #include <i2c_bus.h>
 #include <selector.h>
+#include <pi_regulator.h>
 
 #include <wallDetect.h>
 #include "move.h"
@@ -29,8 +30,9 @@ CONDVAR_DECL(bus_condvar);
 
 #define NB_SAMPLES_OFFSET 	200
 #define MOTOR_OBSTACLE 		400
-#define COEFF_ROT			0.8
-#define error  				1
+#define COEFF_ROT			0.8f
+#define error  				0.5f
+
 
 static THD_WORKING_AREA(waMoveThd, 128);
 static THD_FUNCTION(MoveThd, arg) {
@@ -41,44 +43,35 @@ static THD_FUNCTION(MoveThd, arg) {
 
 	uint16_t pos_motor_right;
 	uint16_t pos_motor_left;
+	int16_t speed_pi;
+	static uint16_t i = 0;
+	static uint16_t j = 0;
 
 	while (1) {
 		if (get_free_path() == straight) { //no obstacle in front of robot
-			if (get_acceleration(Y_AXIS) < 0) {
-				if (get_acceleration(X_AXIS) < 0) {
-					//ccw rotation
+			if (get_acceleration(X_AXIS) > 0){
+				speed_pi = pi_regulator(get_acceleration(X_AXIS));
+				left_motor_set_speed(speed);
+				right_motor_set_speed(speed - speed_pi);
+			}
+			else {
+				speed_pi = pi_regulator(get_acceleration(X_AXIS));
+				left_motor_set_speed(speed + speed_pi);
+				right_motor_set_speed(speed);
+			}
+
+			if (get_acceleration(Y_AXIS) < -2 && speed_pi == 0) {
+				i++;
+				if (i==60000 || j <= 60000){
 					left_motor_set_speed(-speed);
-					right_motor_set_speed(+speed);
-				} else {
-					//cw rotation
-					left_motor_set_speed(speed);
-					right_motor_set_speed(-speed);
+					right_motor_set_speed(speed);
+					if (j == 60000){
+						j=0;
+					}
 				}
 			}
-			else if (get_acceleration(X_AXIS) > error && get_acceleration(X_AXIS) < error + 1){
-				left_motor_set_speed(speed);
-				right_motor_set_speed((1/(get_acceleration(X_AXIS))) * speed);
-			}
-			else if (get_acceleration(X_AXIS) > error) {
-				//cw rotation
-				left_motor_set_speed(speed);
-				right_motor_set_speed(-speed);
-			}
-			else if (get_acceleration(X_AXIS) < -error && get_acceleration(X_AXIS) > -error - 1) {
-				left_motor_set_speed(((1/get_acceleration(X_AXIS))) * speed);
-				right_motor_set_speed(speed);
-			}
-			else if (get_acceleration(X_AXIS) < -error) {
-				//ccw rotation
-				left_motor_set_speed(-speed);
-				right_motor_set_speed(speed);
-			} else if (get_acceleration(Y_AXIS) > 0) {
-				//move forward
-				left_motor_set_speed(speed);
-				right_motor_set_speed(speed);
-			} else {
-				left_motor_set_speed(0);
-				right_motor_set_speed(0);
+			else{
+				i=0;
 			}
 		}
 
@@ -110,7 +103,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			right_motor_set_speed(0);
 		}
 
-		chThdSleepMilliseconds(5);
+		chThdSleepMilliseconds(10);
 	}
 }
 
@@ -317,10 +310,10 @@ int main(void) {
 		//move(speed);
 //		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",
 //				val_acc[0], val_acc[1]);
-		chprintf((BaseSequentialStream *) &SD3,
-				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
-				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
-				get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
+//		chprintf((BaseSequentialStream *) &SD3,
+//				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
+//				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
+//				get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity left=%d\n", get_prox(FRONTLEFT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right=%d\n", get_prox(FRONTRIGHT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right45=%d\n", get_prox(FRONTRIGHT45));
