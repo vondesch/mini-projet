@@ -72,7 +72,7 @@ static THD_FUNCTION(MoveThd, arg) {
 		}
 
 		else if (get_free_path() == left) {
-			while (obstacle_in_range(FRONTRIGHT45)) { // rotate to get goal distance
+			while (obstacle_in_range(FRONTRIGHT45) || obstacle_in_range(FRONTRIGHT)) { // rotate to get goal distance
 				left_motor_set_speed(-speed);
 				right_motor_set_speed(speed);
 			}
@@ -83,7 +83,7 @@ static THD_FUNCTION(MoveThd, arg) {
 				right_motor_set_speed(0.8 * speed);				//magic number
 			}
 		} else if (get_free_path() == right) { //free right
-			while (obstacle_in_range(FRONTLEFT45)) { // rotate to get goal distance
+			while (obstacle_in_range(FRONTLEFT45) || obstacle_in_range(FRONTLEFT)) { // rotate to get goal distance
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
 			}
@@ -304,12 +304,12 @@ int main(void) {
 		val_acc[0] = get_acceleration(X_AXIS);
 		val_acc[1] = get_acceleration(Y_AXIS);
 		//move(speed);
-		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",
-				val_acc[0], val_acc[1]);
-//		chprintf((BaseSequentialStream *) &SD3,
-//				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
-//				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
-//				get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
+//		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",
+//				val_acc[0], val_acc[1]);
+		chprintf((BaseSequentialStream *) &SD3,
+				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
+				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
+				get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity left=%d\n", get_prox(FRONTLEFT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right=%d\n", get_prox(FRONTRIGHT));
 //		chprintf((BaseSequentialStream *)&SD3, "proximity right45=%d\n", get_prox(FRONTRIGHT45));

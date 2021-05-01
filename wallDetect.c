@@ -47,28 +47,31 @@ static THD_FUNCTION(FreePathThd, arg) {
 
 	while (1) {
 		//free forward   smaller value means larger distance
-		if (get_prox(FRONTRIGHT)
-				< mindistance&& get_prox(FRONTLEFT) < mindistance
-				&& get_prox(FRONTRIGHT45) < mindistance*CORR45
-				&& get_prox(FRONTLEFT45) < mindistance*CORR45) {
-			freePath = straight;
-		}	//free right
-		else if (get_prox(FRONTRIGHT45) < mindistance * CORR45
-				&& get_prox(FRONTLEFT45) > mindistance * CORR45) {
-			freePath = left;
+//		if (get_prox(FRONTRIGHT)< mindistance
+//				&& get_prox(FRONTLEFT) < mindistance
+//				&& get_prox(FRONTRIGHT45) < mindistance*CORR45
+//				&& get_prox(FRONTLEFT45) < mindistance*CORR45) {
+//			freePath = straight;
+//		}	//free right
+		if (get_prox(FRONTRIGHT45) < get_prox(FRONTLEFT45)
+				&& get_prox(FRONTLEFT45) >= mindistance * CORR45) {
+			freePath = right;
 		}
 		//free left
 		else if (get_prox(FRONTRIGHT45) > mindistance * CORR45
-				&& get_prox(FRONTLEFT45) < mindistance * CORR45) {
-			freePath = right;
-		}
-
-		else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT)) {//obstacle closer to the right than to the left sensor
+				&& get_prox(FRONTLEFT45) < get_prox(FRONTRIGHT45)) {
 			freePath = left;
 		}
 
-		else {
+		else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT) && get_prox(FRONTRIGHT) > mindistance) {//obstacle closer to the right than to the left sensor
+			freePath = left;
+		}
+
+		else if(get_prox(FRONTLEFT) >= get_prox(FRONTRIGHT) && get_prox(FRONTLEFT) > mindistance) {
 			freePath = right;
+		}
+		else {
+			freePath = straight;
 		}
 		chThdSleepMilliseconds(4);
 	}
