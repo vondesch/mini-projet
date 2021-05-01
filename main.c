@@ -27,8 +27,10 @@ messagebus_t bus;
 MUTEX_DECL(bus_lock);
 CONDVAR_DECL(bus_condvar);
 
-#define NB_SAMPLES_OFFSET 200
-#define MOTOR_OBSTACLE 400
+#define NB_SAMPLES_OFFSET 	200
+#define MOTOR_OBSTACLE 		400
+#define COEFF_ROT			0.8
+#define error  				1
 
 static THD_WORKING_AREA(waMoveThd, 128);
 static THD_FUNCTION(MoveThd, arg) {
@@ -39,25 +41,34 @@ static THD_FUNCTION(MoveThd, arg) {
 
 	uint16_t pos_motor_right;
 	uint16_t pos_motor_left;
-	uint8_t error = 1;					// create define
 
 	while (1) {
 		if (get_free_path() == straight) { //no obstacle in front of robot
 			if (get_acceleration(Y_AXIS) < 0) {
 				if (get_acceleration(X_AXIS) < 0) {
-					//cw rotation
+					//ccw rotation
 					left_motor_set_speed(-speed);
 					right_motor_set_speed(+speed);
 				} else {
-					//ccw rotation
+					//cw rotation
 					left_motor_set_speed(speed);
 					right_motor_set_speed(-speed);
 				}
-			} else if (get_acceleration(X_AXIS) > error) {
+			}
+			else if (get_acceleration(X_AXIS) > error && get_acceleration(X_AXIS) < error + 1){
+				left_motor_set_speed(speed);
+				right_motor_set_speed((1/(get_acceleration(X_AXIS))) * speed);
+			}
+			else if (get_acceleration(X_AXIS) > error) {
 				//cw rotation
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
-			} else if (get_acceleration(X_AXIS) < -error) {
+			}
+			else if (get_acceleration(X_AXIS) < -error && get_acceleration(X_AXIS) > -error - 1) {
+				left_motor_set_speed(((1/get_acceleration(X_AXIS))) * speed);
+				right_motor_set_speed(speed);
+			}
+			else if (get_acceleration(X_AXIS) < -error) {
 				//ccw rotation
 				left_motor_set_speed(-speed);
 				right_motor_set_speed(speed);
@@ -80,7 +91,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			while (left_motor_get_pos() != pos_motor_left
 					&& get_free_path() == straight) {
 				left_motor_set_speed(speed);
-				right_motor_set_speed(0.8 * speed);				//magic number
+				right_motor_set_speed(COEFF_ROT * speed);				//magic number
 			}
 		} else if (get_free_path() == right) { //free right
 			while (obstacle_in_range(FRONTLEFT45) || obstacle_in_range(FRONTLEFT)) { // rotate to get goal distance
@@ -91,7 +102,7 @@ static THD_FUNCTION(MoveThd, arg) {
 
 			while (right_motor_get_pos() != pos_motor_right
 					&& get_free_path() == 1) {
-				left_motor_set_speed(0.8 * speed);			// magic number
+				left_motor_set_speed(COEFF_ROT * speed);			// magic number
 				right_motor_set_speed(speed);
 			}
 		} else {
