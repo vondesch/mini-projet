@@ -25,7 +25,7 @@
 #define COEFF_ROT			0.8f
 #define error  				1
 #define NB_SAMPLE			5
-#define AXIS				1		//axis X and Y
+#define AXIS				2		//axis X and Y
 #define KI_Y				200
 
 static float mean_acc[AXIS];
@@ -47,17 +47,25 @@ static THD_FUNCTION(MoveThd, arg) {
 
 	while (1) {
 
+
+
 		if (get_free_path() == straight ) { //no obstacle in front of robot
 			speed_pid = pid_regulator(mean_acc[X_AXIS]);
 			//clockwise rotation
+
+			if (mean_acc[Y_AXIS] < -error) {
+							speed_neg_slope = mean_acc[Y_AXIS] * KI_Y;
+						}
+			else speed_neg_slope = 0;
+
 			if (mean_acc[X_AXIS] > 0){
-				left_motor_set_speed(speed);
-				right_motor_set_speed(speed - speed_pid);
+				left_motor_set_speed(speed + speed_pid - speed_neg_slope);
+				right_motor_set_speed(speed - speed_pid + speed_neg_slope);
 			}
 			//counter clockwise rotation
 			else {
-				left_motor_set_speed(speed + speed_pid);
-				right_motor_set_speed(speed);
+				left_motor_set_speed(speed + speed_pid + speed_neg_slope);
+				right_motor_set_speed(speed - speed_pid - speed_neg_slope);
 			}
 			//case where the robot is straight on the opposite direction
 //			if (get_acceleration(Y_AXIS) < -2 && speed_pid == 0) {
@@ -71,11 +79,13 @@ static THD_FUNCTION(MoveThd, arg) {
 //					}
 //				}
 //			}
-			if (mean_acc[Y_AXIS] < -error && speed_pid == 0) {
-				speed_neg_slope = mean_acc[Y_AXIS] * KI_Y;
-				left_motor_set_speed(speed + speed_neg_slope);
-				right_motor_set_speed(speed);
-			}
+
+//			if (mean_acc[Y_AXIS] < -error && speed_pid == 0) {
+//				speed_neg_slope = mean_acc[Y_AXIS] * KI_Y;
+//				left_motor_set_speed(speed + speed_neg_slope);
+//				right_motor_set_speed(speed);
+//			}
+
 //			else{
 //				i=0;
 //			}
@@ -87,7 +97,7 @@ static THD_FUNCTION(MoveThd, arg) {
 				right_motor_set_speed(speed);
 			}
 			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
-			while (left_motor_get_pos() != pos_motor_left
+			while (left_motor_get_pos() <= pos_motor_left
 					&& get_free_path() == straight) {
 				left_motor_set_speed(speed);
 				right_motor_set_speed(COEFF_ROT * speed);				//magic number
@@ -99,7 +109,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			}
 			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
 
-			while (right_motor_get_pos() != pos_motor_right
+			while (right_motor_get_pos() <= pos_motor_right
 					&& get_free_path() == 1) {
 				left_motor_set_speed(COEFF_ROT * speed);			// magic number
 				right_motor_set_speed(speed);
@@ -124,7 +134,7 @@ static THD_FUNCTION(MeanAccThd, arg) {
 
 
     //table to store acceleration sample of X and Y
-    float accel[AXIS][NB_SAMPLE];
+    static float accel[AXIS][NB_SAMPLE];
 
 	float sum_x_acc = 0;
 	float sum_y_acc = 0;
@@ -163,7 +173,7 @@ static THD_FUNCTION(MeanAccThd, arg) {
 
         sample++;
 
-        if (sample == NB_SAMPLE){
+        if (sample >= NB_SAMPLE){
         	sample = 0;
         }
     }
