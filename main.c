@@ -12,7 +12,6 @@
 #include <audio/microphone.h>
 #include <math.h>
 
-#include <move.h>
 #include <arm_math.h>
 #include <sensors/imu.h>
 #include <sensors/proximity.h>
@@ -23,92 +22,100 @@
 
 #include <wallDetect.h>
 #include "move.h"
+#include "move.h"
 
 messagebus_t bus;
 MUTEX_DECL(bus_lock);
 CONDVAR_DECL(bus_condvar);
 
-#define NB_SAMPLES_OFFSET 	200
-#define MOTOR_OBSTACLE 		400
-#define COEFF_ROT			0.8f
-#define error  				0.5f
-
-
-static THD_WORKING_AREA(waMoveThd, 128);
-static THD_FUNCTION(MoveThd, arg) {
-	(void) arg;
-	chRegSetThreadName(__FUNCTION__);
-
-	uint16_t speed = 600;
-
-	uint16_t pos_motor_right;
-	uint16_t pos_motor_left;
-	int16_t speed_pid;
-	static uint16_t i = 0;
-	static uint16_t j = 0;
-
-	while (1) {
-		if (get_free_path() == straight) { //no obstacle in front of robot
-			//clockwise rotation
-			if (get_acceleration(X_AXIS) > 0){
-				speed_pid = pid_regulator(get_acceleration(X_AXIS));
-				left_motor_set_speed(speed);
-				right_motor_set_speed(speed - speed_pid);
-			}
-			//counter clockwise rotation
-			else {
-				speed_pid = pid_regulator(get_acceleration(X_AXIS));
-				left_motor_set_speed(speed + speed_pid);
-				right_motor_set_speed(speed);
-			}
-			//case where the robot is straight on the opposite direction
-			if (get_acceleration(Y_AXIS) < -2 && speed_pid == 0) {
-				i++;
-				//annulation of fluctuation when plane
-				if (i==60000 || j <= 60000){
-					left_motor_set_speed(-speed);
-					right_motor_set_speed(speed);
-					if (j == 60000){
-						j=0;
-					}
-				}
-			}
-			else{
-				i=0;
-			}
-		}
-
-		else if (get_free_path() == left) {
-			while (obstacle_in_range(FRONTRIGHT45) || obstacle_in_range(FRONTRIGHT)) { // rotate to get goal distance
-				left_motor_set_speed(-speed);
-				right_motor_set_speed(speed);
-			}
-			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
-			while (left_motor_get_pos() != pos_motor_left
-					&& get_free_path() == straight) {
-				left_motor_set_speed(speed);
-				right_motor_set_speed(COEFF_ROT * speed);				//magic number
-			}
-		} else if (get_free_path() == right) { //free right
-			while (obstacle_in_range(FRONTLEFT45) || obstacle_in_range(FRONTLEFT)) { // rotate to get goal distance
-				left_motor_set_speed(speed);
-				right_motor_set_speed(-speed);
-			}
-			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
-
-			while (right_motor_get_pos() != pos_motor_right
-					&& get_free_path() == 1) {
-				left_motor_set_speed(COEFF_ROT * speed);			// magic number
-				right_motor_set_speed(speed);
-			}
-		} else {
-			left_motor_set_speed(0);
-			right_motor_set_speed(0);
-		}
-
-		chThdSleepMilliseconds(10);
-	}
-}
+//#define NB_SAMPLES_OFFSET 	200
+//#define MOTOR_OBSTACLE 		400
+//#define COEFF_ROT			0.8f
+//#define error  				1
+//
+//
+//
+//static THD_WORKING_AREA(waMoveThd, 128);
+//static THD_FUNCTION(MoveThd, arg) {
+//	(void) arg;
+//	chRegSetThreadName(__FUNCTION__);
+//
+//	uint16_t speed = 600;
+//
+//	uint16_t pos_motor_right;
+//	uint16_t pos_motor_left;
+//	int16_t speed_pid;
+//	uint8_t filter_size = 10;
+////	static uint16_t i = 0;
+////	static uint16_t j = 0;
+//
+//	while (1) {
+//
+//		if (get_free_path() == straight ) { //no obstacle in front of robot
+//
+//			speed_pid = pid_regulator(get_acc(X_AXIS));
+//			//clockwise rotation
+//			if (get_acc(X_AXIS) > 0){
+//				left_motor_set_speed(speed);
+//				right_motor_set_speed(speed - speed_pid);
+//			}
+//			//counter clockwise rotation
+//			else {
+//				left_motor_set_speed(speed + speed_pid);
+//				right_motor_set_speed(speed);
+//			}
+//			//case where the robot is straight on the opposite direction
+////			if (get_acceleration(Y_AXIS) < -2 && speed_pid == 0) {
+////				i++;
+////				//annulation of fluctuation when plane
+////				if (i==60000 || j <= 60000){
+////					left_motor_set_speed(-speed);
+////					right_motor_set_speed(speed);
+////					if (j == 60000){
+////						j=0;
+////					}
+////				}
+////			}
+//			if (get_acc(Y_AXIS, filter_size) > -error && speed_pid == 0) {
+//				left_motor_set_speed(-speed);
+//				right_motor_set_speed(speed);
+//			}
+////			else{
+////				i=0;
+////			}
+//		}
+//
+//		else if (get_free_path() == left) {
+//			while (obstacle_in_range(FRONTRIGHT45) || obstacle_in_range(FRONTRIGHT)) { // rotate to get goal distance
+//				left_motor_set_speed(-speed);
+//				right_motor_set_speed(speed);
+//			}
+//			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
+//			while (left_motor_get_pos() != pos_motor_left
+//					&& get_free_path() == straight) {
+//				left_motor_set_speed(speed);
+//				right_motor_set_speed(COEFF_ROT * speed);				//magic number
+//			}
+//		} else if (get_free_path() == right) { //free right
+//			while (obstacle_in_range(FRONTLEFT45) || obstacle_in_range(FRONTLEFT)) { // rotate to get goal distance
+//				left_motor_set_speed(speed);
+//				right_motor_set_speed(-speed);
+//			}
+//			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
+//
+//			while (right_motor_get_pos() != pos_motor_right
+//					&& get_free_path() == 1) {
+//				left_motor_set_speed(COEFF_ROT * speed);			// magic number
+//				right_motor_set_speed(speed);
+//			}
+//		} else {
+//			left_motor_set_speed(0);
+//			right_motor_set_speed(0);
+//		}
+//
+//		chThdSleepMilliseconds(10);
+//	}
+//}
 
 /*
  void move(uint16_t speed) {
@@ -293,26 +300,33 @@ int main(void) {
 //messagebus_t bus;
 	messagebus_init(&bus, &bus_lock, &bus_condvar);
 
-	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus,
-			"/imu");
-	imu_msg_t imu_values;
+//	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus,
+//			"/imu");
+//	imu_msg_t imu_values;
+
+
+	//wait to be stable
+	chThdSleepMilliseconds(1000);
 
 	calibrate_acc();
 	calibrate_ir();
 
+	move_start();
+
 	//execution of threads threads
 	free_path_start();
-	chThdCreateStatic(waMoveThd, sizeof(waMoveThd), NORMALPRIO, MoveThd, NULL);
+//	chThdCreateStatic(waMoveThd, sizeof(waMoveThd), NORMALPRIO, MoveThd, NULL);
 
 //	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
-	int16_t val_acc[2];
 	while (1) {
-		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
-		val_acc[0] = get_acceleration(X_AXIS);
-		val_acc[1] = get_acceleration(Y_AXIS);
+//		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
+		uint8_t filter_size = 10;
+
 		//move(speed);
 //		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",
-//				val_acc[0], val_acc[1]);
+//				get_acc_filtered(X_AXIS, filter_size), get_acc_filtered(Y_AXIS, filter_size));
+		chprintf((BaseSequentialStream *) &SD3, "%Ax=%d Ay=%d (%x)\r\n\n",
+						get_acc_filtered(X_AXIS, filter_size), get_acc_filtered(Y_AXIS, filter_size));
 //		chprintf((BaseSequentialStream *) &SD3,
 //				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
 //				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),

@@ -81,7 +81,6 @@ static THD_FUNCTION(FreePathThd, arg) {
 void free_path_start() {
 	chThdCreateStatic(waFreePathThd, sizeof(waFreePathThd), NORMALPRIO,
 			FreePathThd, NULL);
-
 }
 
 void set_mindistance(uint16_t distance) {

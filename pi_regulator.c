@@ -17,7 +17,7 @@
 #include <pi_regulator.h>
 
 
-#define ERROR_THRESHOLD			0.5f
+#define ERROR_THRESHOLD			1
 #define MAX_SUM_ERROR 			(MOTOR_SPEED_LIMIT/KI)
 #define KP						200.0f
 #define KI 						0.05
@@ -41,7 +41,9 @@ int16_t pid_regulator(float deviation){
 	//this avoids to always move as we cannot exactly be where we want and
 	//the camera is a bit noisy
 	if(fabs(error) < ERROR_THRESHOLD){
-		return 0;
+		error = 0;
+		sum_error = 0;
+		previous_error = 0;
 	}
 
 	sum_error += error;
