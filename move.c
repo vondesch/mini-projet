@@ -9,15 +9,16 @@
 #include "hal.h"
 #include <math.h>
 #include <usbcfg.h>
-#include <chprintf.h>
 
 #include <main.h>
 #include <motors.h>
 #include <move.h>
 #include <sensors/imu.h>
-#include <sensors/proximity.h>
+//#include <sensors/proximity.h>
 #include <wallDetect.h>
-#include <pi_regulator.h>
+#include <pid_regulator.h>
+#include <leds.h>
+#include <selector.h>
 
 
 #define NB_SAMPLES_OFFSET 	200
@@ -28,7 +29,21 @@
 #define AXIS				2		//axis X and Y
 #define KI_Y				200
 
+#define SPEED0 				200
+#define SPEED1 				400
+#define SPEED2 				500
+#define SPEED3 				600
+#define SPEED4 				800
+
+#define INTENSITY 			100		// LED intensity when ON
+
+#define MINDISTANCESEESAW 	150
+#define MINDISTANCEGAME 	400
+
+enum {off, on, toggle};
+
 static float mean_acc[AXIS];
+static uint16_t speed;
 
 
 static THD_WORKING_AREA(waMoveThd, 128);
@@ -36,7 +51,7 @@ static THD_FUNCTION(MoveThd, arg) {
 	(void) arg;
 	chRegSetThreadName(__FUNCTION__);
 
-	uint16_t speed = 600;
+//	uint16_t speed = 600;
 
 	uint16_t pos_motor_right;
 	uint16_t pos_motor_left;
@@ -67,31 +82,11 @@ static THD_FUNCTION(MoveThd, arg) {
 				left_motor_set_speed(speed + speed_pid + speed_neg_slope);
 				right_motor_set_speed(speed - speed_pid - speed_neg_slope);
 			}
-			//case where the robot is straight on the opposite direction
-//			if (get_acceleration(Y_AXIS) < -2 && speed_pid == 0) {
-//				i++;
-//				//annulation of fluctuation when plane
-//				if (i==60000 || j <= 60000){
-//					left_motor_set_speed(-speed);
-//					right_motor_set_speed(speed);
-//					if (j == 60000){
-//						j=0;
-//					}
-//				}
-//			}
 
-//			if (mean_acc[Y_AXIS] < -error && speed_pid == 0) {
-//				speed_neg_slope = mean_acc[Y_AXIS] * KI_Y;
-//				left_motor_set_speed(speed + speed_neg_slope);
-//				right_motor_set_speed(speed);
-//			}
-
-//			else{
-//				i=0;
-//			}
 		}
 
 		else if (get_free_path() == left) {
+			led_signal();
 			while (obstacle_in_range(FRONTRIGHT45) || obstacle_in_range(FRONTRIGHT)) { // rotate to get goal distance
 				left_motor_set_speed(-speed);
 				right_motor_set_speed(speed);
@@ -102,7 +97,9 @@ static THD_FUNCTION(MoveThd, arg) {
 				left_motor_set_speed(speed);
 				right_motor_set_speed(COEFF_ROT * speed);				//magic number
 			}
+			led_signal();
 		} else if (get_free_path() == right) { //free right
+			led_signal();
 			while (obstacle_in_range(FRONTLEFT45) || obstacle_in_range(FRONTLEFT)) { // rotate to get goal distance
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
@@ -110,10 +107,11 @@ static THD_FUNCTION(MoveThd, arg) {
 			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
 
 			while (right_motor_get_pos() <= pos_motor_right
-					&& get_free_path() == 1) {
+					&& get_free_path() == straight) {
 				left_motor_set_speed(COEFF_ROT * speed);			// magic number
 				right_motor_set_speed(speed);
 			}
+			led_signal();
 		} else {
 			left_motor_set_speed(0);
 			right_motor_set_speed(0);
@@ -179,6 +177,74 @@ static THD_FUNCTION(MeanAccThd, arg) {
     }
 }
 
+static THD_WORKING_AREA(waSpeedSelectThd, 128);
+static THD_FUNCTION(SpeedSelectThd, arg) {
+	(void) arg;
+	chRegSetThreadName(__FUNCTION__);
+
+	while (1) {
+		switch (get_selector()) {
+		case 0:
+			set_led(LED1, on);
+			set_led(LED3, off);
+			set_led(LED5, off);
+			set_led(LED7, off);
+			speed = SPEED0;
+			break;
+		case 1:
+			set_led(LED1, off);			//set mode to game at speed0
+			set_led(LED3, on);
+			set_led(LED5, off);
+			set_led(LED7, off);
+			speed = SPEED1;
+			break;
+		case 2: 				//set mode to game at speed1
+			set_led(LED1, on);
+			set_led(LED3, on);
+			set_led(LED5, on);
+			set_led(LED7, on);
+			speed = SPEED2;
+			break;
+		case 3:			//set mode to game at speed 2
+			set_led(LED1, off);
+			set_led(LED3, off);
+			set_led(LED5, on);
+			set_led(LED7, off);
+			speed = SPEED3;
+			break;
+		case 4:			//set mode to game at speed 3
+			set_led(LED1, off);
+			set_led(LED3, off);
+			set_led(LED5, off);
+			set_led(LED7, on);
+			speed = SPEED4;
+			break;
+		default:
+			set_led(LED1, on);
+			set_led(LED3, on);
+			set_led(LED5, on);
+			set_led(LED7, on);
+
+			speed = SPEED2;
+			break;
+
+		}
+		chThdSleepMilliseconds(1000);
+
+	}
+}
+
+void led_signal(void) {
+	set_body_led(toggle);
+	set_front_led(toggle);
+}
+
+void speed_select_start() {
+	chThdCreateStatic(waSpeedSelectThd, sizeof(waSpeedSelectThd), NORMALPRIO,
+			SpeedSelectThd, NULL);
+
+}
+
 
 void move_start() {
 	chThdCreateStatic(waMoveThd, sizeof(waMoveThd), NORMALPRIO,
@@ -187,3 +253,5 @@ void move_start() {
 			MeanAccThd, NULL);
 
 }
+
+

@@ -8,7 +8,9 @@
 #ifndef MOVE_H_
 #define MOVE_H_
 
+void led_signal(void);
 
+void speed_select_start(void);
 void move_start(void);
 
 
