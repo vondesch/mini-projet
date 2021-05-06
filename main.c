@@ -26,14 +26,11 @@ messagebus_t bus;
 MUTEX_DECL(bus_lock);
 CONDVAR_DECL(bus_condvar);
 
-
-
 static void serial_start(void) {
 	static SerialConfig ser_cfg = { 115200, 0, 0, 0, };
 
 	sdStart(&SD3, &ser_cfg); // UART3.
 }
-
 
 int main(void) {
 	halInit();
@@ -67,6 +64,7 @@ int main(void) {
 
 //	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
 	while (1) {
+		chThdSleepMilliseconds(1000);
 //		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
 //		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",
 //				get_acc_filtered(X_AXIS, filter_size), get_acc_filtered(Y_AXIS, filter_size));

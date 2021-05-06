@@ -15,7 +15,7 @@
 #define RIGHT 			2			//proximity sensor right
 #define LEFT 			5			//proximity sensor left
 
-enum {stuck, straight, left, right};
+enum {straight, left, right};
 
 
 uint8_t obstacle_in_range(uint8_t sensor);

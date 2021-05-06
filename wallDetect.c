@@ -5,19 +5,14 @@
  *      Author: raf-k
  */
 #include <main.h>
-#include "ch.h"			// do ch.h/hal.h need to be included?
+#include "ch.h"
 #include "hal.h"
 #include "wallDetect.h"
 #include <sensors/proximity.h>
 
-
-//#define INTENSITY 80		// LED intensity when ON
-//#define OFF 0
-
 #define RANGE 			110
 #define CORR45 			0.8
 #define MINDISTANCE 	150
-
 
 static uint8_t freePath;
 
@@ -36,24 +31,25 @@ static THD_FUNCTION(FreePathThd, arg) {
 	chRegSetThreadName(__FUNCTION__);
 
 	while (1) {
-		if (get_prox(FRONTRIGHT45) < get_prox(FRONTLEFT45)
-				&& get_prox(FRONTLEFT45) >= MINDISTANCE * CORR45) {
+		if (get_prox(FRONTRIGHT45) < get_prox(FRONTLEFT45) &&
+				get_prox(FRONTLEFT45) >= MINDISTANCE * CORR45) {
 			freePath = right;
 		}
 		//free left
-		else if (get_prox(FRONTRIGHT45) > MINDISTANCE * CORR45
-				&& get_prox(FRONTLEFT45) < get_prox(FRONTRIGHT45)) {
+		else if (get_prox(FRONTRIGHT45) > MINDISTANCE * CORR45 &&
+				get_prox(FRONTLEFT45) < get_prox(FRONTRIGHT45)) {
 			freePath = left;
 		}
 
-		else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT) && get_prox(FRONTRIGHT) > MINDISTANCE) {//obstacle closer to the right than to the left sensor
+		else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT) &&
+				get_prox(FRONTRIGHT) > MINDISTANCE) { //obstacle closer to the right than to the left sensor
 			freePath = left;
 		}
 
-		else if(get_prox(FRONTLEFT) >= get_prox(FRONTRIGHT) && get_prox(FRONTLEFT) > MINDISTANCE) {
+		else if (get_prox(FRONTLEFT) >= get_prox(FRONTRIGHT) &&
+				get_prox(FRONTLEFT) > MINDISTANCE) {
 			freePath = right;
-		}
-		else {
+		} else {
 			freePath = straight;
 		}
 		chThdSleepMilliseconds(4);
@@ -62,8 +58,7 @@ static THD_FUNCTION(FreePathThd, arg) {
 }
 
 void free_path_start() {
-	chThdCreateStatic(waFreePathThd, sizeof(waFreePathThd), NORMALPRIO,
-			FreePathThd, NULL);
+	chThdCreateStatic(waFreePathThd, sizeof(waFreePathThd), NORMALPRIO, FreePathThd, NULL);
 }
 
 uint8_t get_free_path(void) {
