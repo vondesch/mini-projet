@@ -1,8 +1,8 @@
 /*
- * sensor.c
+ * obstacle_detect.c
  *
  *  Created on: Apr 15, 2021
- *      Author: raf-k
+ *      Author: Loic Von Deschwanden and Raphael Kohler
  */
 #include <main.h>
 #include "ch.h"
@@ -25,6 +25,11 @@ uint8_t obstacle_in_range(uint8_t sensor) {
 
 }
 
+
+/**
+ * @brief 	thread that checks for a direction where no obstacle is present
+ * 			The updated information is stored in the variable freePath
+ */
 static THD_WORKING_AREA(waFreePathThd, 128);
 static THD_FUNCTION(FreePathThd, arg) {
 	(void) arg;

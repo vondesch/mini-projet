@@ -2,7 +2,7 @@
  * move.c
  *
  *  Created on: 4 mai 2021
- *      Author: Loic
+ *      Author: Loic Von Deschwanden and Raphael Kohler
  */
 
 #include "ch.h"
@@ -15,17 +15,17 @@
 #include <move.h>
 #include <sensors/imu.h>
 //#include <sensors/proximity.h>
-#include <wallDetect.h>
 #include <pid_regulator.h>
 #include <leds.h>
 #include <selector.h>
+#include "wallDetect.h"
 
 void led_signal(void);
 
 #define NB_SAMPLES_OFFSET 	200
 #define MOTOR_OBSTACLE 		400
 #define COEFF_ROT			0.8f
-#define error  				1
+#define ERROR_THRESHOLD		1													//same variable defined in pid regulator
 #define NB_SAMPLE			5
 #define AXIS				2		//axis X and Y
 #define KI_Y				200
@@ -36,7 +36,7 @@ void led_signal(void);
 #define SPEED3 				600
 #define SPEED4 				800
 
-#define INTENSITY 			100		// LED intensity when ON
+//#define INTENSITY 			100		// LED intensity when ON
 
 enum {
 	off, on, toggle
@@ -45,6 +45,10 @@ enum {
 static float mean_acc[AXIS];
 static uint16_t speed;
 
+/**
+ * @brief 	Thread that coordinates the movement of the robot
+ *
+ */
 static THD_WORKING_AREA(waMoveThd, 128);
 static THD_FUNCTION(MoveThd, arg) {
 	(void) arg;
@@ -65,7 +69,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			speed_pid = pid_regulator(mean_acc[X_AXIS]);
 			//clockwise rotation
 
-			if (mean_acc[Y_AXIS] < -error) {
+			if (mean_acc[Y_AXIS] < -ERROR_THRESHOLD) {
 				speed_neg_slope = mean_acc[Y_AXIS] * KI_Y;
 			} else
 				speed_neg_slope = 0;
@@ -91,7 +95,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
 			while (left_motor_get_pos() <= pos_motor_left && get_free_path() == straight) {
 				left_motor_set_speed(speed);
-				right_motor_set_speed(COEFF_ROT * speed);				//magic number
+				right_motor_set_speed(COEFF_ROT * speed);
 			}
 			led_signal();
 		} else if (get_free_path() == right) { //free right
@@ -116,6 +120,10 @@ static THD_FUNCTION(MoveThd, arg) {
 	}
 }
 
+/**
+ * @brief 	Thread that calculates the mean of several acceleration values along x-and y-direction
+ * 			The averaged values are stored in the array mean_acc
+ */
 static THD_WORKING_AREA(waMeanAccThd, 128);
 static THD_FUNCTION(MeanAccThd, arg) {
 	(void) arg;
@@ -132,7 +140,7 @@ static THD_FUNCTION(MeanAccThd, arg) {
 
 	uint8_t sample = 0;
 
-	//reset accel
+	//reset accel																				///there exists a function that resets an array at once memset
 	for (uint8_t i = 0; i < AXIS; i++) {
 		for (sample = 0; sample < NB_SAMPLE; sample++) {
 			accel[i][sample] = 0;
@@ -145,16 +153,16 @@ static THD_FUNCTION(MeanAccThd, arg) {
 		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));		//wait imu_values
 
 		//subtract oldest acceleration values
-		sum_x_acc = sum_x_acc - accel[X_AXIS][sample];
-		sum_y_acc = sum_y_acc - accel[Y_AXIS][sample];
+		sum_x_acc -= accel[X_AXIS][sample];																	//check syntax  same with +=
+		sum_y_acc -= accel[Y_AXIS][sample];
 
 		//update acceleration values
 		accel[X_AXIS][sample] = imu_values.acceleration[X_AXIS];
 		accel[Y_AXIS][sample] = imu_values.acceleration[Y_AXIS];
 
 		//add updated acceleration values
-		sum_x_acc = sum_x_acc + accel[X_AXIS][sample];
-		sum_y_acc = sum_y_acc + accel[Y_AXIS][sample];
+		sum_x_acc += accel[X_AXIS][sample];
+		sum_y_acc += accel[Y_AXIS][sample];
 
 		//calculate mean
 		mean_acc[X_AXIS] = sum_x_acc / NB_SAMPLE;
@@ -165,9 +173,13 @@ static THD_FUNCTION(MeanAccThd, arg) {
 		if (sample >= NB_SAMPLE) {
 			sample = 0;
 		}
-	}
+	}																						/// why is there no chsleep ms?
 }
 
+/**
+ * @brief 	Thread that checks if the selector has been rotated and updates the speed accordingly
+ *
+ */
 static THD_WORKING_AREA(waSpeedSelectThd, 128);
 static THD_FUNCTION(SpeedSelectThd, arg) {
 	(void) arg;

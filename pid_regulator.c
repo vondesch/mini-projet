@@ -2,7 +2,7 @@
  * piD_regulator.c
  *
  *  Created on: 1 mai 2021
- *      Author: Loic
+ *      Author: Loic Von Deschwanden and Raphael Kohler
  */
 
 #include "ch.h"
@@ -20,21 +20,19 @@
 #define KP						200.0f
 #define KI 						0.05
 #define KD						3
-#define ROTATION_THRESHOLD		10
-#define ROTATION_COEFF			10
+//#define ROTATION_THRESHOLD		10
+//#define ROTATION_COEFF			10
 
-//PID regulator
-int16_t pid_regulator(float deviation) {
 
-	float error = 0;
+int16_t pid_regulator(float error) {
+
 	float speed = 0;
 
 	static float sum_error = 0;
 	static float previous_error = 0;
 
-	error = deviation;
 
-	//disables the PI regulator if the error is to small
+	//disables the PID regulator if the error is to small
 	if (fabs(error) < ERROR_THRESHOLD) {
 		error = 0;
 		sum_error = 0;
