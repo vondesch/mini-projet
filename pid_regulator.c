@@ -15,7 +15,6 @@
 #include <motors.h>
 #include <pid_regulator.h>
 
-#define ERROR_THRESHOLD			1
 #define MAX_SUM_ERROR 			(MOTOR_SPEED_LIMIT/KI)
 #define KP						200.0f
 #define KI 						0.05

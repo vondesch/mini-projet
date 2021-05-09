@@ -36,25 +36,29 @@ static THD_FUNCTION(FreePathThd, arg) {
 	chRegSetThreadName(__FUNCTION__);
 
 	while (1) {
+
+		//check if obstacle closer to the left than to the right sensor
 		if (get_prox(FRONTRIGHT45) < get_prox(FRONTLEFT45) &&
 				get_prox(FRONTLEFT45) >= MINDISTANCE * CORR45) {
 			freePath = right;
 		}
-		//free left
+		else if (get_prox(FRONTLEFT) >= get_prox(FRONTRIGHT) &&
+				get_prox(FRONTLEFT) > MINDISTANCE) {
+			freePath = right;
+		}
+
+		//check if obstacle closer to the right than to the left sensor
 		else if (get_prox(FRONTRIGHT45) > MINDISTANCE * CORR45 &&
 				get_prox(FRONTLEFT45) < get_prox(FRONTRIGHT45)) {
 			freePath = left;
 		}
-
 		else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT) &&
-				get_prox(FRONTRIGHT) > MINDISTANCE) { //obstacle closer to the right than to the left sensor
+				get_prox(FRONTRIGHT) > MINDISTANCE) {
 			freePath = left;
 		}
 
-		else if (get_prox(FRONTLEFT) >= get_prox(FRONTRIGHT) &&
-				get_prox(FRONTLEFT) > MINDISTANCE) {
-			freePath = right;
-		} else {
+		//no obstacle
+		else {
 			freePath = straight;
 		}
 		chThdSleepMilliseconds(4);

@@ -16,7 +16,9 @@
 #define FRONTLEFT 		7			//proximity sensor front-left-5deg
 
 
-enum {straight, left, right};
+enum {straight, 		//no obstacle
+	left, 				//go left because obstacle on the right
+	right};				//go right because obstacle on the left
 
 /**
  * @brief 	Determines if an obstacle is close to a specific IR-sensor

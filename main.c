@@ -33,27 +33,30 @@ static void serial_start(void) {
 }
 
 int main(void) {
+	//system initalisation
 	halInit();
 	chSysInit();
 	mpu_init();
 
-//starts the serial communication
+	//starts the serial communication
 	serial_start();
-//initializes the motors
+
+	//initializes the motors
 	motors_init();
 
 	i2c_start();
 
-//initialisation gyroscope
+	//initializes the gyroscope and proximity sensor
 	imu_start();
 	proximity_start();
 
-//messagebus_t bus;
+	//messagebus_t bus;
 	messagebus_init(&bus, &bus_lock, &bus_condvar);
 
 	//wait to be stable
 	chThdSleepMilliseconds(1000);
 
+	//calibration of the sensors
 	calibrate_acc();
 	calibrate_ir();
 
@@ -64,6 +67,7 @@ int main(void) {
 
 //	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
 	while (1) {
+		//wait 1s
 		chThdSleepMilliseconds(1000);
 //		messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
 //		chprintf((BaseSequentialStream *) &SD3, "%Ax=%.2f Ay=%.2f (%x)\r\n\n",

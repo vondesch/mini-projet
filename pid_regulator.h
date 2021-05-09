@@ -8,6 +8,8 @@
 #ifndef PID_REGULATOR_H_
 #define PID_REGULATOR_H_
 
+#define ERROR_THRESHOLD			1		//admissible error of the accelerometer
+
 /**
  * @brief 	PID regulator that corrects the speed to prevent a halting movement
  */
