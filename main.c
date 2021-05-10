@@ -19,8 +19,8 @@
 #include <selector.h>
 
 #include <pid_regulator.h>
-#include <wallDetect.h>
 #include <move.h>
+#include "detect_obstacle.h"
 
 messagebus_t bus;
 MUTEX_DECL(bus_lock);
@@ -46,7 +46,7 @@ int main(void) {
 
 	i2c_start();
 
-	//initializes the gyroscope and proximity sensor
+	//initializes the accelerometer and proximity sensor
 	imu_start();
 	proximity_start();
 
@@ -60,7 +60,7 @@ int main(void) {
 	calibrate_acc();
 	calibrate_ir();
 
-	//execution of threads
+	//initialization and execution of threads
 	move_start();
 	free_path_start();
 	speed_select_start();

@@ -1,7 +1,7 @@
 /*
  * move.c
  *
- *  Created on: 4 mai 2021
+ *  Created on: May 4, 2021
  *      Author: Loic Von Deschwanden and Raphael Kohler
  */
 
@@ -18,7 +18,7 @@
 #include <pid_regulator.h>
 #include <leds.h>
 #include <selector.h>
-#include "wallDetect.h"
+#include "detect_obstacle.h"
 
 void led_signal(void);
 
@@ -54,8 +54,8 @@ static THD_FUNCTION(MoveThd, arg) {
 	uint16_t pos_motor_right;
 	uint16_t pos_motor_left;
 
-	int16_t speed_pid;			//speed rectification to go in the right direction (PID regulator X acceleration)
-	int16_t speed_neg_slope;	//speed rectification for negative Y acceleration
+	int16_t speed_pid;//speed rectification to go in the right direction (PID regulator X acceleration)
+	int16_t speed_neg_slope;//speed rectification for negative Y acceleration
 
 	while (1) {
 
@@ -75,30 +75,30 @@ static THD_FUNCTION(MoveThd, arg) {
 				//clockwise rotation or straight
 				left_motor_set_speed(speed + speed_pid - speed_neg_slope);
 				right_motor_set_speed(speed - speed_pid + speed_neg_slope);
-			}
-			else {
+			} else {
 				//counter clockwise rotation or straight
 				left_motor_set_speed(speed + speed_pid + speed_neg_slope);
 				right_motor_set_speed(speed - speed_pid - speed_neg_slope);
 			}
 		}
 
-
 		//obstacle detected on the right
-		else if (get_free_path() == left) {//go left
+		else if (get_free_path() == left) {	//go left
 
 			//set led to signal an obstacle
 			led_signal();
 
-			//right rotation until no obstacle in front
-			while (obstacle_in_range(FRONTRIGHT45) || obstacle_in_range(FRONTRIGHT)) {
+			//clockwise rotation until no obstacle is in front of the robot
+			while (obstacle_in_range(FRONTRIGHT45)
+					|| obstacle_in_range(FRONTRIGHT)) {
 				left_motor_set_speed(-speed);
 				right_motor_set_speed(speed);
 			}
 
-			//go straight with a little rotation to pass the obstacle
+			//go straight with a slight rotation to pass the obstacle
 			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
-			while (left_motor_get_pos() <= pos_motor_left && get_free_path() == straight) {
+			while (left_motor_get_pos() <= pos_motor_left
+					&& get_free_path() == straight) {
 				left_motor_set_speed(speed);
 				right_motor_set_speed(COEFF_ROT * speed);
 			}
@@ -107,7 +107,6 @@ static THD_FUNCTION(MoveThd, arg) {
 			led_signal();
 		}
 
-
 		//obstacle detected on the left
 		else if (get_free_path() == right) {
 
@@ -115,15 +114,17 @@ static THD_FUNCTION(MoveThd, arg) {
 			led_signal();
 
 			//right rotation until no obstacle in front
-			while (obstacle_in_range(FRONTLEFT45) || obstacle_in_range(FRONTLEFT)) {
+			while (obstacle_in_range(FRONTLEFT45)
+					|| obstacle_in_range(FRONTLEFT)) {
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
 			}
 
-			//go straight with a little rotation to pass the obstacle
+			//go straight with a slight rotation to pass the obstacle
 			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
-			while (right_motor_get_pos() <= pos_motor_right && get_free_path() == straight) {
-				left_motor_set_speed(COEFF_ROT * speed);			// magic number
+			while (right_motor_get_pos() <= pos_motor_right
+					&& get_free_path() == straight) {
+				left_motor_set_speed(COEFF_ROT * speed);		// magic number
 				right_motor_set_speed(speed);
 			}
 
@@ -148,7 +149,8 @@ static THD_FUNCTION(MeanAccThd, arg) {
 	(void) arg;
 	chRegSetThreadName(__FUNCTION__);
 
-	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
+	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus,
+			"/imu");
 	imu_msg_t imu_values;
 
 	//table to store acceleration sample of X and Y
@@ -159,7 +161,7 @@ static THD_FUNCTION(MeanAccThd, arg) {
 
 	uint8_t sample = 0;
 
-	//reset accel																	///there exists a function that resets an array at once memset
+	//reset accel
 	for (uint8_t i = 0; i < AXIS; i++) {
 		for (sample = 0; sample < NB_SAMPLE; sample++) {
 			accel[i][sample] = 0;
@@ -193,8 +195,8 @@ static THD_FUNCTION(MeanAccThd, arg) {
 		if (sample >= NB_SAMPLE) {
 			sample = 0;
 		}
-	}																/// why is there no chsleep ms?
-}																	/// parce que messagebus_topic _wait attend les nouvel donnée donc pas besoin de sleep
+	}
+}
 
 /**
  * @brief 	Thread that checks if the selector has been rotated and updates the speed accordingly
@@ -207,7 +209,7 @@ static THD_FUNCTION(SpeedSelectThd, arg) {
 
 	while (1) {
 
-		// set the speed selected and led indicator
+		// set the selected speed and indicate usinig LEDS
 		switch (get_selector()) {
 		case 0:
 			set_led(LED1, on);
@@ -225,7 +227,7 @@ static THD_FUNCTION(SpeedSelectThd, arg) {
 			speed = SPEED1;
 			break;
 
-		case 2:
+		case 2:	// default speed - all LEDS on
 			set_led(LED1, on);
 			set_led(LED3, on);
 			set_led(LED5, on);
@@ -257,7 +259,6 @@ static THD_FUNCTION(SpeedSelectThd, arg) {
 			speed = SPEED2;
 			break;
 		}
-		//sleep 1s
 		chThdSleepMilliseconds(1000);
 	}
 }
@@ -268,13 +269,15 @@ void led_signal(void) {
 }
 
 void speed_select_start() {
-	chThdCreateStatic(waSpeedSelectThd, sizeof(waSpeedSelectThd), NORMALPRIO, SpeedSelectThd, NULL);
+	chThdCreateStatic(waSpeedSelectThd, sizeof(waSpeedSelectThd), NORMALPRIO,
+			SpeedSelectThd, NULL);
 
 }
 
 void move_start() {
 	chThdCreateStatic(waMoveThd, sizeof(waMoveThd), NORMALPRIO, MoveThd, NULL);
-	chThdCreateStatic(waMeanAccThd, sizeof(waMeanAccThd), NORMALPRIO, MeanAccThd, NULL);
+	chThdCreateStatic(waMeanAccThd, sizeof(waMeanAccThd), NORMALPRIO,
+			MeanAccThd, NULL);
 
 }
 

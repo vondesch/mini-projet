@@ -1,7 +1,7 @@
 /*
  * piD_regulator.c
  *
- *  Created on: 1 mai 2021
+ *  Created on: May 1, 2021
  *      Author: Loic Von Deschwanden and Raphael Kohler
  */
 
@@ -22,7 +22,6 @@
 //#define ROTATION_THRESHOLD		10
 //#define ROTATION_COEFF			10
 
-
 int16_t pid_regulator(float error) {
 
 	float speed = 0;
@@ -30,8 +29,7 @@ int16_t pid_regulator(float error) {
 	static float sum_error = 0;
 	static float previous_error = 0;
 
-
-	//disables the PID regulator if the error is to small
+	//disables the PID regulator if the error is too small
 	if (fabs(error) < ERROR_THRESHOLD) {
 		error = 0;
 		sum_error = 0;

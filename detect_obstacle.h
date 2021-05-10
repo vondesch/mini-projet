@@ -1,8 +1,8 @@
-#ifndef WALLDETECT_H
-#define WALLDETECT_H
+#ifndef DETECT_OBSTACLE_H
+#define DETECT_OBSTACLE_H
 
 /*
- * obstacle_detect.h
+ * detect_obstacle.h
  *
  *  Created on: Apr 15, 2021
  *      Author: Loic Von Deschwanden and Raphael Kohler
@@ -15,10 +15,12 @@
 #define FRONTLEFT45 	6			//proximity sensor front-left-45deg
 #define FRONTLEFT 		7			//proximity sensor front-left-5deg
 
-
-enum {straight, 		//no obstacle
+enum {
+	straight, 		//no obstacle
 	left, 				//go left because obstacle on the right
-	right};				//go right because obstacle on the left
+	right
+};
+//go right because obstacle on the left
 
 /**
  * @brief 	Determines if an obstacle is close to a specific IR-sensor
@@ -36,8 +38,5 @@ void free_path_start(void);
  */
 uint8_t get_free_path(void);
 
-
 #endif /* WALLDETECT_H */
-
-
 

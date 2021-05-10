@@ -1,5 +1,5 @@
 /*
- * obstacle_detect.c
+ * detect_obstacle.c
  *
  *  Created on: Apr 15, 2021
  *      Author: Loic Von Deschwanden and Raphael Kohler
@@ -7,12 +7,12 @@
 #include <main.h>
 #include "ch.h"
 #include "hal.h"
-#include "wallDetect.h"
 #include <sensors/proximity.h>
+#include "detect_obstacle.h"
 
-#define RANGE 			110
-#define CORR45 			0.8
-#define MINDISTANCE 	150
+#define MINDISTANCE 	150		// minimal distance to an obstacle situated in the direction of movement
+#define CORR45 			0.8		// correction factor to keep the minimal distance to objects located at 45deg to the direction of movement
+#define RANGE 			110		// IR sensor value that corresponds to the minimally accepted distance to an obstacle while rotating
 
 static uint8_t freePath;
 
@@ -24,7 +24,6 @@ uint8_t obstacle_in_range(uint8_t sensor) {
 	}
 
 }
-
 
 /**
  * @brief 	thread that checks for a direction where no obstacle is present
@@ -39,21 +38,19 @@ static THD_FUNCTION(FreePathThd, arg) {
 
 		//check if obstacle closer to the left than to the right sensor
 		if (get_prox(FRONTRIGHT45) < get_prox(FRONTLEFT45) &&
-				get_prox(FRONTLEFT45) >= MINDISTANCE * CORR45) {
+		get_prox(FRONTLEFT45) >= MINDISTANCE * CORR45) {
 			freePath = right;
-		}
-		else if (get_prox(FRONTLEFT) >= get_prox(FRONTRIGHT) &&
-				get_prox(FRONTLEFT) > MINDISTANCE) {
+		} else if (get_prox(FRONTLEFT) >= get_prox(FRONTRIGHT) &&
+		get_prox(FRONTLEFT) > MINDISTANCE) {
 			freePath = right;
 		}
 
 		//check if obstacle closer to the right than to the left sensor
-		else if (get_prox(FRONTRIGHT45) > MINDISTANCE * CORR45 &&
-				get_prox(FRONTLEFT45) < get_prox(FRONTRIGHT45)) {
+		else if (get_prox(FRONTRIGHT45) > MINDISTANCE * CORR45
+				&& get_prox(FRONTLEFT45) < get_prox(FRONTRIGHT45)) {
 			freePath = left;
-		}
-		else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT) &&
-				get_prox(FRONTRIGHT) > MINDISTANCE) {
+		} else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT) &&
+		get_prox(FRONTRIGHT) > MINDISTANCE) {
 			freePath = left;
 		}
 
@@ -67,7 +64,8 @@ static THD_FUNCTION(FreePathThd, arg) {
 }
 
 void free_path_start() {
-	chThdCreateStatic(waFreePathThd, sizeof(waFreePathThd), NORMALPRIO, FreePathThd, NULL);
+	chThdCreateStatic(waFreePathThd, sizeof(waFreePathThd), NORMALPRIO,
+			FreePathThd, NULL);
 }
 
 uint8_t get_free_path(void) {
