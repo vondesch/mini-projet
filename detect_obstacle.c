@@ -11,7 +11,7 @@
 #include "detect_obstacle.h"
 
 #define MINDISTANCE 	150		// minimal distance to an obstacle situated in the direction of movement
-#define CORR45 			0.8		// correction factor to keep the minimal distance to objects located at 45deg to the direction of movement
+#define CORR45 			0.7		// correction factor to keep the minimal distance to objects located at 45deg to the direction of movement
 #define RANGE 			110		// IR sensor value that corresponds to the minimally accepted distance to an obstacle while rotating
 
 static uint8_t freePath;

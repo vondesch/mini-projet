@@ -51,8 +51,8 @@ static THD_FUNCTION(MoveThd, arg) {
 	(void) arg;
 	chRegSetThreadName(__FUNCTION__);
 
-	uint16_t pos_motor_right;
-	uint16_t pos_motor_left;
+	int32_t pos_motor_right;
+	int32_t pos_motor_left;
 
 	int16_t speed_pid;//speed rectification to go in the right direction (PID regulator X acceleration)
 	int16_t speed_neg_slope;//speed rectification for negative Y acceleration
@@ -95,6 +95,9 @@ static THD_FUNCTION(MoveThd, arg) {
 				right_motor_set_speed(speed);
 			}
 
+			//wait to turn a little bit more and have a free way
+			chThdSleepMilliseconds(5);
+
 			//go straight with a slight rotation to pass the obstacle
 			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
 			while (left_motor_get_pos() <= pos_motor_left
@@ -119,6 +122,9 @@ static THD_FUNCTION(MoveThd, arg) {
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
 			}
+
+			//wait to turn a little bit more and have a free way
+			chThdSleepMilliseconds(5);
 
 			//go straight with a slight rotation to pass the obstacle
 			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
