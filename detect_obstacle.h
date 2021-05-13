@@ -27,7 +27,7 @@ enum {
  * @brief 	Determines if an obstacle is close to a specific IR-sensor
  * 			Returns true if obstacle is closer than RANGE
  */
-uint8_t obstacle_in_range(uint8_t sensor);
+//uint8_t obstacle_in_range(uint8_t sensor);
 
 /**
  * @brief 	Starts the thread that checks in what direction no obstacle is present
