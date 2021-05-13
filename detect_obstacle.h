@@ -18,7 +18,8 @@
 enum {
 	straight, 		//no obstacle
 	left, 				//go left because obstacle on the right
-	right
+	right,
+	stop
 };
 //go right because obstacle on the left
 
