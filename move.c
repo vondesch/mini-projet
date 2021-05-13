@@ -89,8 +89,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			led_signal();
 
 			//clockwise rotation until no obstacle is in front of the robot
-			while (obstacle_in_range(FRONTRIGHT45)
-					|| obstacle_in_range(FRONTRIGHT)) {
+			while (get_free_path() == left) {
 				left_motor_set_speed(-speed);
 				right_motor_set_speed(speed);
 			}
@@ -114,8 +113,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			led_signal();
 
 			//right rotation until no obstacle in front
-			while (obstacle_in_range(FRONTLEFT45)
-					|| obstacle_in_range(FRONTLEFT)) {
+			while (get_free_path() == right ) {
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
 			}
@@ -131,10 +129,10 @@ static THD_FUNCTION(MoveThd, arg) {
 			//clear led obstacle
 			led_signal();
 		}
-//		else {
-//			left_motor_set_speed(0);
-//			right_motor_set_speed(0);
-//		}
+		else if (get_free_path() == stop){
+			left_motor_set_speed(0);
+			right_motor_set_speed(0);
+		}
 
 		chThdSleepMilliseconds(10);
 	}

@@ -10,10 +10,10 @@
 #include <sensors/proximity.h>
 #include "detect_obstacle.h"
 
-#define MINDISTANCE 	150		// minimal distance to an obstacle situated in the direction of movement
-#define CORR45 			0.8		// correction factor to keep the minimal distance to objects located at 45deg to the direction of movement
+#define MINDISTANCE 	120		// minimal distance to an obstacle situated in the direction of movement
+#define CORR45 			1		// correction factor to keep the minimal distance to objects located at 45deg to the direction of movement
 #define RANGE 			110		// IR sensor value that corresponds to the minimally accepted distance to an obstacle while rotating
-
+#define COVERED 		200
 static uint8_t freePath;
 
 uint8_t obstacle_in_range(uint8_t sensor) {
@@ -52,6 +52,9 @@ static THD_FUNCTION(FreePathThd, arg) {
 		} else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT) &&
 		get_prox(FRONTRIGHT) > MINDISTANCE) {
 			freePath = left;
+		}
+		else if (get_prox(RIGHT) > COVERED && get_prox(LEFT) > COVERED){
+			freePath = stop;
 		}
 
 		//no obstacle
