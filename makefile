@@ -9,7 +9,7 @@ GLOBAL_PATH = ../../lib/e-puck2_main-processor
 CSRC += ./main.c \
 		./move.c \
 		./detect_obstacle.c \
-		./pid_regulator.c \
+		./tools.c \
 		
 		
 

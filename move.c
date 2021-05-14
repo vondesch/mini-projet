@@ -12,21 +12,19 @@
 
 #include <main.h>
 #include <motors.h>
-#include <move.h>
 #include <sensors/imu.h>
-//#include <sensors/proximity.h>
-#include <pid_regulator.h>
 #include <leds.h>
 #include <selector.h>
-#include "detect_obstacle.h"
 
-void led_signal(void);
+#include "move.h"
+#include "tools.h"
+#include "detect_obstacle.h"
 
 #define MOTOR_OBSTACLE 		400		//nb step of the motor to set the next position
 #define COEFF_ROT			0.8f	//little rotation while moving around the obstacle
 #define NB_SAMPLE			5		//nb sample for the mean value
 #define AXIS				2		//axis X and Y
-#define KP_Y				200		//coefficient for the rotation regulator when the Y acceleration is negative
+#define KP_Y				200		//coefficient for the rotation controller when the Y acceleration is negative
 
 //different speed for the selector
 //speed[cm/s]=[steps/s]/[steps/turn]*[cm/turn]
@@ -35,10 +33,6 @@ void led_signal(void);
 #define SPEED2 				500		//6.5 cm/s
 #define SPEED3 				600		//7.8 cm/s
 #define SPEED4 				800		//10.4 cm/s
-
-enum {
-	off, on, toggle		//state of the LED
-};
 
 static float mean_acc[AXIS];		//mean acceleration
 static uint16_t speed;				//speed of the robot
@@ -55,7 +49,7 @@ static THD_FUNCTION(MoveThd, arg) {
 	int32_t pos_motor_right;
 	int32_t pos_motor_left;
 
-	int16_t speed_pid;//speed rectification to go in the right direction (PID regulator X acceleration)
+	int16_t speed_pid;//speed rectification to go in the right direction (PID controller X acceleration)
 	int16_t speed_neg_slope;//speed rectification for negative Y acceleration
 
 	while (1) {
@@ -63,7 +57,7 @@ static THD_FUNCTION(MoveThd, arg) {
 		//no obstacle in front of robot
 		if (get_free_path() == straight) {
 
-			speed_pid = pid_regulator(mean_acc[X_AXIS]);
+			speed_pid = pid_controller(mean_acc[X_AXIS]);
 
 			//accelerate the rotation if the robot is in the opposite direction
 			if (mean_acc[Y_AXIS] < -ERROR_THRESHOLD) {
@@ -117,7 +111,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			led_signal();
 
 			//right rotation until no obstacle in front
-			while (get_free_path() == right ) {
+			while (get_free_path() == right) {
 				left_motor_set_speed(speed);
 				right_motor_set_speed(-speed);
 			}
@@ -135,8 +129,7 @@ static THD_FUNCTION(MoveThd, arg) {
 
 			//clear led obstacle
 			led_signal();
-		}
-		else if (get_free_path() == stop){
+		} else if (get_free_path() == stop) {
 			left_motor_set_speed(0);
 			right_motor_set_speed(0);
 		}
@@ -266,11 +259,6 @@ static THD_FUNCTION(SpeedSelectThd, arg) {
 		}
 		chThdSleepMilliseconds(1000);
 	}
-}
-
-void led_signal(void) {
-	set_body_led(toggle);
-	set_front_led(toggle);
 }
 
 void speed_select_start() {

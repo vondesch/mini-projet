@@ -11,15 +11,14 @@
 #include <motors.h>
 #include <math.h>
 
-//#include <arm_math.h>
 #include <sensors/imu.h>
 #include <sensors/proximity.h>
 #include <msgbus/messagebus.h>
 #include <i2c_bus.h>
 #include <selector.h>
 
-#include <pid_regulator.h>
-#include <move.h>
+#include "tools.h"
+#include "move.h"
 #include "detect_obstacle.h"
 
 messagebus_t bus;

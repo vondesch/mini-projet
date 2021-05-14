@@ -8,20 +8,12 @@
 #include "ch.h"
 #include "hal.h"
 #include <sensors/proximity.h>
+
 #include "detect_obstacle.h"
 
 #define MINDISTANCE 	500		// minimal distance to an obstacle situated in the direction of movement
 #define COVERED 		800
 static uint8_t freePath;
-
-//uint8_t obstacle_in_range(uint8_t sensor) {
-//	if (get_prox(sensor) > RANGE) {
-//		return true;
-//	} else {
-//		return false;
-//	}
-//
-//}
 
 /**
  * @brief 	thread that checks for a direction where no obstacle is present
@@ -34,9 +26,9 @@ static THD_FUNCTION(FreePathThd, arg) {
 
 	while (1) {
 
-		if (get_prox(RIGHT) > COVERED && get_prox(LEFT) > COVERED){
-					freePath = stop;
-				}
+		if (get_prox(RIGHT) > COVERED && get_prox(LEFT) > COVERED) {
+			freePath = stop;
+		}
 
 		//check if obstacle closer to the left than to the right sensor
 		else if (get_prox(FRONTRIGHT45) < get_prox(FRONTLEFT45) &&
@@ -45,7 +37,7 @@ static THD_FUNCTION(FreePathThd, arg) {
 		} else if (get_prox(FRONTLEFT) > get_prox(FRONTRIGHT) &&
 		get_prox(FRONTLEFT) > MINDISTANCE) {
 			freePath = right;
-		} else if (get_prox(LEFT) > MINDISTANCE){
+		} else if (get_prox(LEFT) > MINDISTANCE) {
 			freePath = right;
 		}
 
@@ -56,7 +48,7 @@ static THD_FUNCTION(FreePathThd, arg) {
 		} else if (get_prox(FRONTRIGHT) > get_prox(FRONTLEFT) &&
 		get_prox(FRONTRIGHT) > MINDISTANCE) {
 			freePath = left;
-		}else if (get_prox(RIGHT) > MINDISTANCE){
+		} else if (get_prox(RIGHT) > MINDISTANCE) {
 			freePath = left;
 		}
 

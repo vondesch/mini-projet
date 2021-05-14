@@ -17,18 +17,16 @@
 
 enum {
 	straight, 		//no obstacle
-	left, 				//go left because obstacle on the right
-	right,
-	stop
+	left, 			//go left because obstacle on the right
+	right,			//go right because obstacle on the left
+	stop			//user picked up robot
 };
-//go right because obstacle on the left
 
 /**
  * @brief 	Determines if an obstacle is close to a specific IR-sensor
  * 			Returns true if obstacle is closer than RANGE
  */
 //uint8_t obstacle_in_range(uint8_t sensor);
-
 /**
  * @brief 	Starts the thread that checks in what direction no obstacle is present
  */
