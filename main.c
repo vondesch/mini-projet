@@ -7,7 +7,7 @@
 #include "memory_protection.h"
 #include <usbcfg.h>
 #include <main.h>
-//#include <chprintf.h>
+#include <chprintf.h>
 #include <motors.h>
 #include <math.h>
 
@@ -61,9 +61,9 @@ int main(void) {
 	calibrate_ir();
 
 	//initialization and execution of threads
-	move_start();
 	free_path_start();
 	speed_select_start();
+	move_start();
 
 //	imu_compute_offset(imu_topic, NB_SAMPLES_OFFSET);
 	while (1) {
@@ -76,6 +76,9 @@ int main(void) {
 //				"%proximity_left45=%d proximity_left=%d proximity_right=%d proximity_right45=%d (%x)\r\n\n",
 //				get_prox(FRONTLEFT45), get_prox(FRONTLEFT),
 //				get_prox(FRONTRIGHT), get_prox(FRONTRIGHT45));
+//		chprintf((BaseSequentialStream *) &SD3,
+//						"%proximity_right=%d  (%x)\r\n\n",
+//						get_prox(FRONTRIGHT));
 	}
 }
 
