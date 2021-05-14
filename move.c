@@ -29,11 +29,12 @@ void led_signal(void);
 #define KP_Y				200		//coefficient for the rotation regulator when the Y acceleration is negative
 
 //different speed for the selector
-#define SPEED0 				200
-#define SPEED1 				400
-#define SPEED2 				500
-#define SPEED3 				600
-#define SPEED4 				800
+//speed[cm/s]=[steps/s]/[steps/turn]*[cm/turn]
+#define SPEED0 				200 	//2.6 cm/s
+#define SPEED1 				400		//5.2 cm/s
+#define SPEED2 				500		//6.5 cm/s
+#define SPEED3 				600		//7.8 cm/s
+#define SPEED4 				800		//10.4 cm/s
 
 enum {
 	off, on, toggle		//state of the LED
@@ -275,7 +276,6 @@ void led_signal(void) {
 void speed_select_start() {
 	chThdCreateStatic(waSpeedSelectThd, sizeof(waSpeedSelectThd), NORMALPRIO,
 			SpeedSelectThd, NULL);
-
 }
 
 void move_start() {
