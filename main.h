@@ -9,6 +9,8 @@ extern "C" {
 #include "msgbus/messagebus.h"
 #include "parameter/parameter.h"
 
+#define SLEEP		1000	//sleep 1 second
+
 /** Robot wide IPC bus. */
 extern messagebus_t bus;
 

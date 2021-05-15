@@ -7,8 +7,6 @@
 
 #include "ch.h"
 #include "hal.h"
-#include <math.h>
-#include <usbcfg.h>
 
 #include <main.h>
 #include <motors.h>
@@ -25,6 +23,8 @@
 #define NB_SAMPLE			5		//nb sample for the mean value
 #define AXIS				2		//axis X and Y
 #define KP_Y				200		//coefficient for the rotation controller when the Y acceleration is negative
+#define SLEEP_5				5		//sleep 5ms
+#define SLEEP_10			10		//sleep 10ms
 
 //different speed for the selector
 //speed[cm/s]=[steps/s]/[steps/turn]*[cm/turn]
@@ -33,6 +33,8 @@
 #define SPEED2 				500		//6.5 cm/s
 #define SPEED3 				600		//7.8 cm/s
 #define SPEED4 				800		//10.4 cm/s
+
+
 
 static float mean_acc[AXIS];		//mean acceleration
 static uint16_t speed;				//speed of the robot
@@ -87,7 +89,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			}
 
 			//wait to turn a little bit more and have a free way
-			chThdSleepMilliseconds(5);
+			chThdSleepMilliseconds(SLEEP_5);
 
 			//go straight with a slight rotation to pass the obstacle
 			int32_t pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
@@ -114,13 +116,13 @@ static THD_FUNCTION(MoveThd, arg) {
 			}
 
 			//wait to turn a little bit more and have a free way
-			chThdSleepMilliseconds(5);
+			chThdSleepMilliseconds(SLEEP_5);
 
 			//go straight with a slight rotation to pass the obstacle
 			int32_t pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
 			while (right_motor_get_pos() <= pos_motor_right
 					&& get_free_path() == straight) {
-				left_motor_set_speed(COEFF_ROT * speed);		// magic number
+				left_motor_set_speed(COEFF_ROT * speed);
 				right_motor_set_speed(speed);
 			}
 
@@ -131,7 +133,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			right_motor_set_speed(0);
 		}
 
-		chThdSleepMilliseconds(10);
+		chThdSleepMilliseconds(SLEEP_10);
 	}
 }
 
@@ -254,7 +256,7 @@ static THD_FUNCTION(SpeedSelectThd, arg) {
 			speed = SPEED2;
 			break;
 		}
-		chThdSleepMilliseconds(1000);
+		chThdSleepMilliseconds(SLEEP);
 	}
 }
 

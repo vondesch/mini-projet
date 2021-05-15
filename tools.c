@@ -7,10 +7,8 @@
 
 #include "ch.h"
 #include "hal.h"
+
 #include <math.h>
-//#include <usbcfg.h>
-//#include <chprintf.h>
-#include <sensors/imu.h>
 #include <leds.h>
 #include <motors.h>
 

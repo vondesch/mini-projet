@@ -4,16 +4,18 @@
  *  Created on: Apr 15, 2021
  *      Author: Loic Von Deschwanden and Raphael Kohler
  */
-#include <main.h>
 #include "ch.h"
 #include "hal.h"
+
 #include <sensors/proximity.h>
 
 #include "detect_obstacle.h"
 
-#define MINDISTANCE 	500		// minimal distance to an obstacle situated in the direction of movement
-#define COVERED 		800
-static uint8_t freePath;
+#define MINDISTANCE 	500		// minimal distance to an obstacle situated in the direction of movement (2 cm)
+#define COVERED 		800		//minimal distance to stop the robot (1.5 cm)
+#define SLEEP_4			4		//sleep 4ms of the thread FreePath
+
+static uint8_t freePath;		//state of the path (straight,left,right,stop)
 
 /**
  * @brief 	thread that checks for a direction where no obstacle is present
@@ -56,7 +58,7 @@ static THD_FUNCTION(FreePathThd, arg) {
 		else {
 			freePath = straight;
 		}
-		chThdSleepMilliseconds(4);
+		chThdSleepMilliseconds(SLEEP_4);
 	}
 
 }
