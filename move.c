@@ -46,9 +46,6 @@ static THD_FUNCTION(MoveThd, arg) {
 	(void) arg;
 	chRegSetThreadName(__FUNCTION__);
 
-	int32_t pos_motor_right;
-	int32_t pos_motor_left;
-
 	int16_t speed_pid;//speed rectification to go in the right direction (PID controller X acceleration)
 	int16_t speed_neg_slope;//speed rectification for negative Y acceleration
 
@@ -93,7 +90,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			chThdSleepMilliseconds(5);
 
 			//go straight with a slight rotation to pass the obstacle
-			pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
+			int32_t pos_motor_left = left_motor_get_pos() + MOTOR_OBSTACLE;
 			while (left_motor_get_pos() <= pos_motor_left
 					&& get_free_path() == straight) {
 				left_motor_set_speed(speed);
@@ -120,7 +117,7 @@ static THD_FUNCTION(MoveThd, arg) {
 			chThdSleepMilliseconds(5);
 
 			//go straight with a slight rotation to pass the obstacle
-			pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
+			int32_t pos_motor_right = right_motor_get_pos() + MOTOR_OBSTACLE;
 			while (right_motor_get_pos() <= pos_motor_right
 					&& get_free_path() == straight) {
 				left_motor_set_speed(COEFF_ROT * speed);		// magic number
