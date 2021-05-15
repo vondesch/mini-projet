@@ -8,7 +8,6 @@
 
 #include <main.h>
 #include <motors.h>
-//#include <math.h>
 #include <sensors/imu.h>
 #include <sensors/proximity.h>
 #include <msgbus/messagebus.h>
